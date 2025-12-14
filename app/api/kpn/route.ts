@@ -21,7 +21,7 @@ function verifyKpnSecret(kpnBody: KPNBody, kpnSecret: string | undefined) {
   });
 }
 
-export async function GET(req: Request) {
+export async function POST(req: Request) {
   try {
     const kpnBody: KPNBody = await req.json();
     const messageToken = req.headers.get("Things-Message-Token");
@@ -77,9 +77,9 @@ export async function GET(req: Request) {
 
       console.log(`Created entry for player ${player.id} with units: ${value}`);
     }
-  } catch {
-    console.log("Discarded invalid KPN request");
+  } catch (error) {
+    console.log("Discarded invalid KPN request", error);
   }
 
-  return new Response("OK", { status: 200 });
+  return new Response(null, { status: 201 });
 }
