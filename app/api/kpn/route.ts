@@ -8,10 +8,10 @@ import { KPNBody } from "@/types/kpn";
 
 import getPocketBase from "@/utils/getPocketBase";
 
-function verifyKpnSecret(kpnBody: KPNBody, kpnSecret: string | undefined) {
+function verifyKpnSecret(kpnBody: string, kpnSecret: string | undefined) {
   if (!kpnSecret) return null;
   const encoder = new TextEncoder();
-  const data = encoder.encode(JSON.stringify(kpnBody) + kpnSecret);
+  const data = encoder.encode(kpnBody + kpnSecret);
   return crypto.subtle.digest("SHA-256", data).then((hashBuffer) => {
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     const hashString = hashArray
@@ -23,13 +23,16 @@ function verifyKpnSecret(kpnBody: KPNBody, kpnSecret: string | undefined) {
 
 export async function POST(req: Request) {
   try {
+    const textBody = await req.text();
     const kpnBody: KPNBody = await req.json();
     const messageToken = req.headers.get("Things-Message-Token");
     const kpnSecret = process.env.KPN_SECRET;
 
-    if ((await verifyKpnSecret(kpnBody, kpnSecret)) !== messageToken) {
+    const securityHash = await verifyKpnSecret(textBody, kpnSecret);
+
+    if (securityHash !== messageToken) {
       console.log("Unauthorized KPN request", {
-        expected: await verifyKpnSecret(kpnBody, kpnSecret),
+        expected: securityHash,
         received: messageToken,
       });
       // return new Response("Unauthorized", { status: 401 });
