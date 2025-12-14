@@ -6,7 +6,7 @@ import {
 } from "@/pocketbase-types";
 import { KPNBody } from "@/types/kpn";
 
-import pb from "@/utils/pocketbase";
+import getPocketBase from "@/utils/getPocketBase";
 
 export async function GET(req: Request) {
   try {
@@ -20,6 +20,8 @@ export async function GET(req: Request) {
 
     // Convert hex string to UTF-8 string
     const payloadUtf8 = Buffer.from(payloadHex, "hex");
+
+    const pb = getPocketBase();
 
     // Read per 4 bytes as two uint8 values (id, value)
     for (let i = 0; i < payloadUtf8.length; i += 4) {
