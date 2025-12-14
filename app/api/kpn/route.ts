@@ -36,45 +36,47 @@ export async function POST(req: Request) {
 
     console.log("KPN Body:", kpnBody);
 
-    const payloadObject = kpnBody[0];
+    if (kpnBody[0].n !== "payload") {
+      // KPN sends payloads and join/location markers. We only care about payloads here.
+      throw new Error("First object is not payload");
+    }
 
-    // Read payloadObject.vs as hex string
-    const payloadHex = payloadObject.vs;
-
-    // Convert hex string to UTF-8 string
-    const payloadUtf8 = Buffer.from(payloadHex, "hex");
+    // Read payloadObject.vs as hex string into a UTF-8 buffer
+    const payloadUtf8 = Buffer.from(kpnBody[0].vs, "hex");
 
     const pb = getPocketBase();
 
     // Read per 4 bytes as two uint8 values (id, value)
     for (let i = 0; i < payloadUtf8.length; i += 4) {
-      const id = payloadUtf8.readUint16BE(i);
-      const value = payloadUtf8.readUint16BE(i + 2);
-      console.log(`ID: ${id}, Value: ${value}`);
+      const glasId = payloadUtf8.readUint16BE(i);
+      const changedByValue = payloadUtf8.readUint16BE(i + 2);
+      console.log(`ID: ${glasId}, Value: ${changedByValue}`);
 
       // Store in PocketBase
       const player = await pb
         .collection(Collections.Players)
         .getFirstListItem<PlayersResponse<{ session: SessionsResponse }>>(
-          `hardware_id = "${id}" && session.active = true`,
+          `hardware_id = "${glasId}" && session.active = true`,
           {
             expand: "session",
           }
         );
 
       if (!player) {
-        console.log(`No active session for hardware ID: ${id}`);
+        console.log(`No active session for hardware ID: ${glasId}`);
         continue;
       }
 
       await pb.collection(Collections.Entries).create({
-        units: value,
+        units: changedByValue,
         player: player.id,
         giveable: false,
         hide: false,
       } as Create<Collections.Entries>);
 
-      console.log(`Created entry for player ${player.id} with units: ${value}`);
+      console.log(
+        `Created entry for player ${player.id} with units: ${changedByValue}`
+      );
     }
   } catch (error) {
     console.log("Discarded invalid KPN request", error);
