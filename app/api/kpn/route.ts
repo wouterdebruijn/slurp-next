@@ -31,11 +31,7 @@ export async function POST(req: Request) {
     const securityHash = await verifyKpnSecret(textBody, kpnSecret);
 
     if (securityHash !== messageToken) {
-      console.log("Unauthorized KPN request", {
-        expected: securityHash,
-        received: messageToken,
-      });
-      // return new Response("Unauthorized", { status: 401 });
+      return new Response("Unauthorized", { status: 401 });
     }
 
     console.log("KPN Body:", kpnBody);
