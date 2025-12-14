@@ -1,8 +1,8 @@
 import { Suspense } from "react";
 
-import JoinClient from "@/app/JoinClient";
+import LeaderboardClient from "@/app/leaderboard/LeaderboardClient";
 
-export default function JoinPage() {
+export default function LeaderboardPage() {
   return (
     <Suspense
       fallback={
@@ -13,7 +13,7 @@ export default function JoinPage() {
         </div>
       }
     >
-      <JoinClient />
+      <LeaderboardClient />
     </Suspense>
   );
 }

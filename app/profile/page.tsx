@@ -1,8 +1,8 @@
 import { Suspense } from "react";
 
-import JoinClient from "@/app/JoinClient";
+import ProfileClient from "@/app/profile/ProfileClient";
 
-export default function JoinPage() {
+export default function ProfilePage() {
   return (
     <Suspense
       fallback={
@@ -13,7 +13,7 @@ export default function JoinPage() {
         </div>
       }
     >
-      <JoinClient />
+      <ProfileClient />
     </Suspense>
   );
 }
