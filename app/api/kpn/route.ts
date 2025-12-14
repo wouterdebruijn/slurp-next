@@ -49,8 +49,8 @@ export async function POST(req: Request) {
 
     // Read per 4 bytes as two uint8 values (id, value)
     for (let i = 0; i < payloadUtf8.length; i += 4) {
-      const id = payloadUtf8.readUInt8(i);
-      const value = payloadUtf8.readUInt8(i + 1);
+      const id = payloadUtf8.readUint16BE(i);
+      const value = payloadUtf8.readUint16BE(i + 2);
       console.log(`ID: ${id}, Value: ${value}`);
 
       // Store in PocketBase
