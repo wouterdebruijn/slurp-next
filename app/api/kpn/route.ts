@@ -68,7 +68,7 @@ export async function POST(req: Request) {
       }
 
       await pb.collection(Collections.Entries).create({
-        units: changedByValue,
+        units: -changedByValue,
         player: player.id,
         giveable: false,
         hide: false,
