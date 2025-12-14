@@ -8,9 +8,33 @@ import { KPNBody } from "@/types/kpn";
 
 import getPocketBase from "@/utils/getPocketBase";
 
+function verifyKpnSecret(kpnBody: KPNBody, kpnSecret: string | undefined) {
+  if (!kpnSecret) return null;
+  const encoder = new TextEncoder();
+  const data = encoder.encode(JSON.stringify(kpnBody) + kpnSecret);
+  return crypto.subtle.digest("SHA-256", data).then((hashBuffer) => {
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashString = hashArray
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+    return hashString;
+  });
+}
+
 export async function GET(req: Request) {
   try {
     const kpnBody: KPNBody = await req.json();
+    const messageToken = req.headers.get("Things-Message-Token");
+    const kpnSecret = process.env.KPN_SECRET;
+
+    if ((await verifyKpnSecret(kpnBody, kpnSecret)) !== messageToken) {
+      console.log("Unauthorized KPN request", {
+        expected: await verifyKpnSecret(kpnBody, kpnSecret),
+        received: messageToken,
+      });
+      // return new Response("Unauthorized", { status: 401 });
+    }
+
     console.log("KPN Body:", kpnBody);
 
     const payloadObject = kpnBody[0];
