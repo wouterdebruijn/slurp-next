@@ -24,7 +24,7 @@ function verifyKpnSecret(kpnBody: string, kpnSecret: string | undefined) {
 export async function POST(req: Request) {
   try {
     const textBody = await req.text();
-    const kpnBody: KPNBody = await req.json();
+    const kpnBody: KPNBody = JSON.parse(textBody);
     const messageToken = req.headers.get("Things-Message-Token");
     const kpnSecret = process.env.KPN_SECRET;
 
