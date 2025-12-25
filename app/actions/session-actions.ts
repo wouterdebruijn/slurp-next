@@ -115,7 +115,7 @@ export async function createPlayer(data: CreatePlayerData): Promise<{
             player: existingPlayer,
           };
         }
-      } catch (error) {
+      } catch {
         // If no existing player found, continue to create new one
         console.log("No existing player found, creating new one");
       }
