@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { QueryProvider } from "./providers/query-provider";
 import "./globals.css";
@@ -17,18 +17,19 @@ export const metadata: Metadata = {
   title: "Slurp - Join the Party!",
   description: "Join drinking sessions and have fun with friends",
   manifest: "/manifest.json",
-  themeColor: "#FBBF24",
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
     title: "Slurp",
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  colorScheme: "light",
 };
 
 export default function RootLayout({
