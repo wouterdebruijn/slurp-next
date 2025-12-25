@@ -66,16 +66,10 @@ export default function PlayerTimelineGraph({
   // Get all player IDs from the data
   const playerIds = Object.keys(playerNames);
 
-  // Assign colors to players
+  // Assign colors to players based on username hash
   const playerColors: Record<string, string> = {};
   playerIds.forEach((playerId) => {
-    const topPlayerRank = topThreePlayers.find((p) => p.id === playerId)?.rank;
-    if (topPlayerRank && topPlayerRank <= 3) {
-      playerColors[playerId] =
-        RANK_COLORS_HEX[topPlayerRank as keyof typeof RANK_COLORS_HEX];
-    } else {
-      playerColors[playerId] = hashStringToColor(playerNames[playerId]);
-    }
+    playerColors[playerId] = hashStringToColor(playerNames[playerId]);
   });
 
   // Format data for chart - format timestamps for display
