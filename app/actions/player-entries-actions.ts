@@ -18,6 +18,7 @@ export interface PlayerTimelineData {
 export async function getPlayerEntries(sessionId: string): Promise<{
   timelineData: PlayerTimelineData[];
   playerNames: Record<string, string>;
+  lastPlayer?: { username: string; timestamp: string };
 }> {
   try {
     const pb = getPocketBase();
@@ -46,8 +47,11 @@ export async function getPlayerEntries(sessionId: string): Promise<{
     const playerNames: Record<string, string> = {};
     const playerCumulativeShots: Record<string, number> = {};
 
+    // Track last player entry
+    let lastPlayerEntry: { username: string; timestamp: string } | undefined;
+
     // Find earliest entry to determine start time
-    let earliestTime: Date | null = null;
+    let earliestTime: Date | null = new Date(Date.now());
 
     entries.forEach((entry) => {
       const entryTime = new Date(entry.created);
@@ -69,7 +73,9 @@ export async function getPlayerEntries(sessionId: string): Promise<{
     const fiveHoursAgo = new Date(now.getTime() - 5 * 60 * 60 * 1000);
 
     // Use the later of (earliest entry time or 5 hours ago)
-    const startTime = earliestTime > fiveHoursAgo ? earliestTime : fiveHoursAgo;
+    const startTime = new Date(
+      Math.max(earliestTime.getTime(), fiveHoursAgo.getTime())
+    );
 
     // Round down to nearest 10-minute bucket
     startTime.setMinutes(Math.floor(startTime.getMinutes() / 10) * 10);
@@ -93,6 +99,14 @@ export async function getPlayerEntries(sessionId: string): Promise<{
       const username = entry.expand.player.username;
       const entryTime = new Date(entry.created);
       const shots = Math.abs(entry.units) / shotUnitCount;
+
+      // Track the last (most recent) player entry
+      if (!lastPlayerEntry || entryTime > new Date(lastPlayerEntry.timestamp)) {
+        lastPlayerEntry = {
+          username,
+          timestamp: entry.created,
+        };
+      }
 
       // Skip entries older than our start time (outside 5-hour window)
       if (entryTime < startTime) {
@@ -144,6 +158,7 @@ export async function getPlayerEntries(sessionId: string): Promise<{
     return {
       timelineData,
       playerNames,
+      lastPlayer: lastPlayerEntry,
     };
   } catch (error) {
     console.error("Error fetching player entries:", error);
