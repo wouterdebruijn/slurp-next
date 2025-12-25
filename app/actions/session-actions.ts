@@ -65,6 +65,23 @@ export async function getSessionByHardwareId(
   }
 }
 
+export async function getPlayerByHardwareId(
+  hardwareId: string
+): Promise<PlayersResponse | null> {
+  try {
+    const pb = getPocketBase();
+    const player = await pb
+      .collection(Collections.Players)
+      .getFirstListItem<PlayersResponse>(
+        `hardware_id = ${parseInt(hardwareId)}`
+      );
+    return player;
+  } catch (error) {
+    console.error("Error fetching player by hardware ID:", error);
+    return null;
+  }
+}
+
 interface CreatePlayerData {
   username: string;
   sessionId: string;
