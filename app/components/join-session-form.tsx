@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { useForm } from "react-hook-form";
+import { useState, useTransition, useEffect } from "react";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { createPlayer, getActiveSessions } from "@/app/actions/session-actions";
-import { SessionsResponse } from "@/pocketbase-types";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -28,8 +27,6 @@ export function JoinSessionForm() {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string>("");
   const [success, setSuccess] = useState(false);
-  const [selectedSession, setSelectedSession] =
-    useState<SessionsResponse | null>(null);
 
   const { data: sessions, isLoading } = useQuery({
     queryKey: ["activeSessions"],
@@ -41,12 +38,27 @@ export function JoinSessionForm() {
     register,
     handleSubmit,
     formState: { errors },
+    setValue,
+    control,
   } = useForm<JoinFormData>({
     resolver: zodResolver(joinSchema),
-    defaultValues: {
-      hardwareId: shotglasId,
-    },
+    defaultValues: { hardwareId: shotglasId },
   });
+
+  const sessionId = useWatch({ control, name: "sessionId" }) || "";
+
+  // Derive selected session from sessionId and sessions
+  const selectedSession =
+    sessionId && sessions
+      ? sessions.find((s) => s.id === sessionId) || null
+      : null;
+
+  // Auto-select first session when sessions load
+  useEffect(() => {
+    if (sessions && sessions.length > 0 && !sessionId) {
+      setValue("sessionId", sessions[0].id);
+    }
+  }, [sessions, sessionId, setValue]);
 
   const onSubmit = async (data: JoinFormData) => {
     setError("");
@@ -59,8 +71,6 @@ export function JoinSessionForm() {
       });
 
       if (result.success && result.player) {
-        const session = sessions?.find((s) => s.id === data.sessionId) || null;
-        setSelectedSession(session);
         setSuccess(true);
         // Redirect to leaderboard after a short delay
         setTimeout(() => {
@@ -150,27 +160,29 @@ export function JoinSessionForm() {
             )}
           </div>
 
-          {/* Hardware ID Field */}
-          <div>
-            <label
-              htmlFor="hardwareId"
-              className="block text-sm font-bold text-gray-700 mb-2"
-            >
-              Glass ID 🥃
-            </label>
-            <input
-              id="hardwareId"
-              type="text"
-              placeholder="Enter your glass ID"
-              {...register("hardwareId")}
-              className="w-full px-4 py-3 border-3 border-yellow-300 rounded-2xl focus:outline-none focus:ring-4 focus:ring-yellow-400 focus:border-yellow-400 transition-all text-gray-800 font-medium"
-            />
-            {errors.hardwareId && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.hardwareId.message}
-              </p>
-            )}
-          </div>
+          {/* Hardware ID Field - Only show if not provided via URL */}
+          {!shotglasId && (
+            <div>
+              <label
+                htmlFor="hardwareId"
+                className="block text-sm font-bold text-gray-700 mb-2"
+              >
+                Glass ID 🥃
+              </label>
+              <input
+                id="hardwareId"
+                type="text"
+                placeholder="Enter your glass ID"
+                {...register("hardwareId")}
+                className="w-full px-4 py-3 border-3 border-yellow-300 rounded-2xl focus:outline-none focus:ring-4 focus:ring-yellow-400 focus:border-yellow-400 transition-all text-gray-800 font-medium"
+              />
+              {errors.hardwareId && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.hardwareId.message}
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Username Field */}
           <div>
@@ -217,6 +229,20 @@ export function JoinSessionForm() {
               "Join Session 🚀"
             )}
           </button>
+
+          {/* View Leaderboard Button */}
+          {selectedSession && (
+            <button
+              type="button"
+              onClick={() =>
+                router.push(`/leaderboard?session=${selectedSession.id}`)
+              }
+              disabled={isLoading || !sessions || sessions.length === 0}
+              className="w-full py-3 bg-white border-3 border-yellow-400 text-yellow-600 text-lg font-bold rounded-2xl hover:bg-yellow-50 active:scale-95 transform transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg cursor-pointer"
+            >
+              👀 View Leaderboard Only
+            </button>
+          )}
         </form>
 
         <div className="mt-6 text-center">
