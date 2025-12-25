@@ -29,7 +29,7 @@ export default function PlayerCard({
   return (
     <div
       className={`
-        relative overflow-hidden rounded-2xl shadow-lg transition-all hover:scale-102 hover:shadow-xl
+        relative overflow-hidden rounded-2xl xl:rounded-3xl shadow-lg transition-all hover:scale-102 hover:shadow-xl
         bg-white border-2 border-gray-200
         ${isCurrentPlayer ? "ring-4 ring-green-400" : ""}
       `}
@@ -38,11 +38,11 @@ export default function PlayerCard({
         background: userColor.bgColor,
       }}
     >
-      <div className="p-4 flex items-center justify-between">
-        <div className="flex items-center gap-4 flex-1">
+      <div className="p-4 xl:p-6 flex items-center justify-between">
+        <div className="flex items-center gap-4 xl:gap-6 flex-1">
           {/* Rank */}
           <div
-            className="text-3xl font-bold text-white min-w-15 text-center"
+            className="text-3xl xl:text-4xl font-bold text-white min-w-15 xl:min-w-20 text-center"
             style={{
               textShadow: rankEmoji
                 ? "0 2px 4px rgba(0, 0, 0, 0.5)"
@@ -54,7 +54,7 @@ export default function PlayerCard({
 
           {/* Player Info */}
           <div className="flex-1">
-            <h3 className="text-xl font-bold text-white">
+            <h3 className="text-xl xl:text-2xl font-bold text-white">
               {username}
               {isCurrentPlayer && " (You)"}
             </h3>
@@ -62,15 +62,19 @@ export default function PlayerCard({
 
           {/* Total Score */}
           <div className="text-right">
-            <div className="text-3xl font-bold text-white">{totalShots}</div>
-            <div className="text-xs text-white/90">shots</div>
+            <div className="text-3xl xl:text-4xl font-bold text-white">
+              {totalShots}
+            </div>
+            <div className="text-xs xl:text-base text-white/90">shots</div>
           </div>
         </div>
       </div>
 
       {/* Sparkle Effect for Top 3 */}
       {rankEmoji && (
-        <div className="absolute top-2 right-2 text-2xl animate-pulse">✨</div>
+        <div className="absolute top-2 xl:top-3 right-2 xl:right-3 text-2xl xl:text-3xl animate-pulse">
+          ✨
+        </div>
       )}
     </div>
   );

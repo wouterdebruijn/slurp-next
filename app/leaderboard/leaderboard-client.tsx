@@ -42,8 +42,8 @@ export default function LeaderboardClient({
     .map((p) => ({ id: p.id, rank: p.rank }));
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-0 sm:p-6">
-      <div className="bg-transparent sm:bg-white rounded-none sm:rounded-3xl sm:shadow-2xl p-4 sm:p-8 max-w-4xl w-full min-h-screen sm:min-h-0">
+    <div className="flex flex-col items-center justify-center min-h-screen p-0 sm:p-6 xl:p-12">
+      <div className="bg-transparent rounded-none p-4 sm:p-8 xl:p-12 max-w-[95vw] w-full min-h-screen sm:min-h-0">
         <LeaderboardHeader sessionShortcode={session.shortcode} />
 
         {currentPlayer && (
@@ -53,27 +53,36 @@ export default function LeaderboardClient({
           />
         )}
 
-        <div className="space-y-3 mb-8">
-          {players.length === 0 ? (
-            <EmptyLeaderboard />
-          ) : (
-            players.map((player, index) => (
-              <PlayerCard
-                key={player.id}
-                rank={player.rank}
-                username={player.username}
-                totalShots={player.totalShots}
-                isCurrentPlayer={player.id === playerId}
-                index={index}
-              />
-            ))
-          )}
-        </div>
+        {/* Landscape Layout: Side-by-side for TV/wide screens */}
+        <div className="flex flex-col lg:flex-row lg:gap-6 lg:items-start">
+          {/* Leaderboard Section */}
+          <div className="lg:flex-1 xl:flex-[1] lg:min-w-0">
+            <div className="space-y-3 mb-8">
+              {players.length === 0 ? (
+                <EmptyLeaderboard />
+              ) : (
+                players.map((player, index) => (
+                  <PlayerCard
+                    key={player.id}
+                    rank={player.rank}
+                    username={player.username}
+                    totalShots={player.totalShots}
+                    isCurrentPlayer={player.id === playerId}
+                    index={index}
+                  />
+                ))
+              )}
+            </div>
+          </div>
 
-        <PlayerTimelineGraph
-          sessionId={sessionId}
-          topThreePlayers={topThreePlayers}
-        />
+          {/* Graph Section */}
+          <div className="lg:flex-1 xl:flex-[2] lg:min-w-0">
+            <PlayerTimelineGraph
+              sessionId={sessionId}
+              topThreePlayers={topThreePlayers}
+            />
+          </div>
+        </div>
 
         <LeaderboardActions onRefresh={() => refetch()} />
       </div>

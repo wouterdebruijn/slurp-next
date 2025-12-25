@@ -111,66 +111,81 @@ export default function PlayerTimelineGraph({
   });
 
   return (
-    <div className="bg-yellow-50 rounded-3xl p-6 mb-8 border-3 border-yellow-300 shadow-xl">
-      <div className="flex items-center mb-6">
-        <span className="text-4xl">📈</span>
-        <div className="inline-block ml-3">
-          <h2 className="text-2xl font-bold text-gray-800">
+    <div className="bg-yellow-50 rounded-3xl p-6 xl:p-10 mb-8 border-3 border-yellow-300 shadow-xl">
+      <div className="flex items-center mb-6 xl:mb-8">
+        <span className="text-4xl xl:text-7xl">📈</span>
+        <div className="inline-block ml-3 xl:ml-6">
+          <h2 className="text-2xl xl:text-5xl font-bold text-gray-800">
             Shot Progress Over Time
           </h2>
           {lastPlayer && (
-            <p className="text-sm text-yellow-600 font-semibold">
+            <p className="text-sm xl:text-2xl text-yellow-600 font-semibold">
               {getRandomPraise(lastPlayer.username)}
             </p>
           )}
         </div>
       </div>
-      <ResponsiveContainer width="100%" height={320}>
-        <LineChart data={formattedData} margin={{ left: -20, right: 10, top: 5, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="5 5" stroke="#FDE68A" opacity={0.6} />
-          <XAxis
-            dataKey="time"
-            stroke="#CA8A04"
-            strokeWidth={2}
-            style={{ fontSize: "13px", fontWeight: "600" }}
-            tick={{ fill: "#CA8A04" }}
-          />
-          <YAxis
-            stroke="#CA8A04"
-            strokeWidth={2}
-            style={{ fontSize: "13px", fontWeight: "600" }}
-            tick={{ fill: "#CA8A04" }}
-          />
-          <Tooltip
-            contentStyle={{
-              backgroundColor: "#FFFBEB",
-              border: "3px solid #FBBF24",
-              borderRadius: "16px",
-              fontSize: "13px",
-              fontWeight: "600",
-              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-            }}
-            labelStyle={{ color: "#CA8A04", fontWeight: "700" }}
-          />
-          <Legend
-            wrapperStyle={{ fontSize: "13px", fontWeight: "600" }}
-            formatter={(value) => playerNames[value] || value}
-          />
-          {playerIds.map((playerId) => (
-            <Line
-              key={playerId}
-              type="monotone"
-              dataKey={playerId}
-              stroke={playerColors[playerId]}
-              strokeWidth={3}
-              dot={{ r: 4, strokeWidth: 2, fill: "#fff" }}
-              activeDot={{ r: 6 }}
-              name={playerNames[playerId]}
-              connectNulls
+      <div className="h-80 xl:h-[600px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart
+            data={formattedData}
+            margin={{ left: -20, right: 10, top: 5, bottom: 20 }}
+          >
+            <CartesianGrid
+              strokeDasharray="5 5"
+              stroke="#FDE68A"
+              opacity={0.6}
             />
-          ))}
-        </LineChart>
-      </ResponsiveContainer>
+            <XAxis
+              dataKey="time"
+              stroke="#CA8A04"
+              strokeWidth={2}
+              style={{ fontSize: "11px", fontWeight: "600" }}
+              tick={{ fill: "#CA8A04" }}
+              angle={-45}
+              textAnchor="end"
+              height={60}
+            />
+            <YAxis
+              stroke="#CA8A04"
+              strokeWidth={2}
+              style={{ fontSize: "13px", fontWeight: "600" }}
+              tick={{ fill: "#CA8A04" }}
+              strokeWidth={2}
+              style={{ fontSize: "13px", fontWeight: "600" }}
+              tick={{ fill: "#CA8A04" }}
+            />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: "#FFFBEB",
+                border: "3px solid #FBBF24",
+                borderRadius: "16px",
+                fontSize: "13px",
+                fontWeight: "600",
+                boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+              }}
+              labelStyle={{ color: "#CA8A04", fontWeight: "700" }}
+            />
+            <Legend
+              wrapperStyle={{ fontSize: "13px", fontWeight: "600" }}
+              formatter={(value) => playerNames[value] || value}
+            />
+            {playerIds.map((playerId) => (
+              <Line
+                key={playerId}
+                type="monotone"
+                dataKey={playerId}
+                stroke={playerColors[playerId]}
+                strokeWidth={3}
+                dot={{ r: 4, strokeWidth: 2, fill: "#fff" }}
+                activeDot={{ r: 6 }}
+                name={playerNames[playerId]}
+                connectNulls
+              />
+            ))}
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }
