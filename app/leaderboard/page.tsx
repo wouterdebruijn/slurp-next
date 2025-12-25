@@ -118,25 +118,24 @@ export default function LeaderboardPage() {
   const currentPlayer = players.find((p) => p.id === playerId);
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-yellow-300 via-yellow-400 to-orange-400 p-6">
-      <div className="max-w-4xl mx-auto">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-linear-to-br from-yellow-300 via-yellow-400 to-orange-400 p-6">
+      <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-4xl w-full">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="text-6xl mb-4">🏆</div>
-          <h1 className="text-4xl font-bold text-white mb-2 drop-shadow-lg">
-            Leaderboard
-          </h1>
-          <div className="bg-white/90 backdrop-blur rounded-2xl px-6 py-3 inline-block">
-            <p className="text-sm text-gray-600 mb-1">Session</p>
-            <p className="text-2xl font-bold text-yellow-600">
-              {session.shortcode}
-            </p>
+          <div className="flex items-center justify-center gap-4 mb-6">
+            <div className="text-5xl">🏆</div>
+            <div className="flex flex-col items-start">
+              <h1 className="text-3xl font-bold text-gray-800">Leaderboard</h1>
+              <p className="text-lg text-yellow-600 font-bold">
+                {session.shortcode}
+              </p>
+            </div>
           </div>
         </div>
 
         {/* Current Player Highlight */}
         {currentPlayer && (
-          <div className="bg-white/90 backdrop-blur rounded-2xl p-4 mb-6 border-4 border-green-400 animate-slide-in">
+          <div className="bg-yellow-50 rounded-2xl p-4 mb-6 border-3 border-green-400 animate-slide-in">
             <p className="text-sm text-gray-600 mb-1 text-center">Your Stats</p>
             <div className="flex justify-around items-center">
               <div className="text-center">
@@ -156,9 +155,9 @@ export default function LeaderboardPage() {
         )}
 
         {/* Leaderboard */}
-        <div className="space-y-3">
+        <div className="space-y-3 mb-8">
           {players.length === 0 ? (
-            <div className="bg-white rounded-3xl shadow-2xl p-8 text-center">
+            <div className="bg-yellow-50 rounded-3xl border-3 border-yellow-300 p-8 text-center">
               <div className="text-4xl mb-4">🤷</div>
               <p className="text-gray-600">
                 No players yet. Be the first to join!
@@ -247,10 +246,10 @@ export default function LeaderboardPage() {
         </div>
 
         {/* Refresh Button */}
-        <div className="mt-8 text-center">
+        <div className="text-center">
           <button
             onClick={() => refetch()}
-            className="px-6 py-3 bg-white text-yellow-600 font-bold rounded-2xl hover:bg-white/90 active:scale-95 transition-all shadow-lg cursor-pointer"
+            className="px-6 py-3 bg-yellow-400 text-white font-bold rounded-2xl hover:bg-yellow-500 active:scale-95 transition-all shadow-lg cursor-pointer"
           >
             🔄 Refresh Leaderboard
           </button>
@@ -260,7 +259,7 @@ export default function LeaderboardPage() {
         <div className="mt-4 text-center">
           <button
             onClick={() => router.push("/")}
-            className="text-white font-medium hover:underline cursor-pointer"
+            className="text-gray-600 font-medium hover:text-gray-800 hover:underline cursor-pointer"
           >
             ← Back to Home
           </button>
