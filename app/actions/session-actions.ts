@@ -91,6 +91,36 @@ export async function createPlayer(data: CreatePlayerData): Promise<{
       };
     }
 
+    // Check if player with same username (case-insensitive) and hardware_id already exists
+    if (data.hardwareId) {
+      try {
+        const existingPlayers = await pb
+          .collection("players")
+          .getFullList<PlayersResponse>({
+            filter: `session = "${data.sessionId}" && hardware_id = ${parseInt(
+              data.hardwareId
+            )}`,
+          });
+
+        // Check for case-insensitive username match
+        const existingPlayer = existingPlayers.find(
+          (p) => p.username.toLowerCase() === data.username.toLowerCase()
+        );
+
+        if (existingPlayer) {
+          // Return existing player instead of creating a new one
+          revalidatePath("/");
+          return {
+            success: true,
+            player: existingPlayer,
+          };
+        }
+      } catch (error) {
+        // If no existing player found, continue to create new one
+        console.log("No existing player found, creating new one");
+      }
+    }
+
     // Create the player
     const playerData: Create<Collections.Players> = {
       username: data.username,
