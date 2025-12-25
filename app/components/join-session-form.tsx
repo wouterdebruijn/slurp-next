@@ -88,7 +88,7 @@ export function JoinSessionForm({ shotglasId = "" }: JoinSessionFormProps) {
           router.push(
             `/leaderboard?session=${data.sessionId}&player=${result.player!.id}`
           );
-        }, 1000);
+        }, 2000);
       } else {
         setError(result.error || "Failed to join session");
       }
