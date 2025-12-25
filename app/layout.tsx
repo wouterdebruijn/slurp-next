@@ -40,9 +40,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased `}
       >
-        <QueryProvider>{children}</QueryProvider>
+        <div className="min-h-screen bg-linear-to-br from-yellow-300 via-yellow-400 to-orange-400">
+          <QueryProvider>{children}</QueryProvider>
+        </div>
       </body>
     </html>
   );

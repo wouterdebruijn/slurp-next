@@ -42,7 +42,7 @@ export default function LeaderboardClient({
     .map((p) => ({ id: p.id, rank: p.rank }));
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-linear-to-br from-yellow-300 via-yellow-400 to-orange-400 p-6">
+    <div className="flex flex-col items-center justify-center min-h-screen p-6">
       <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-4xl w-full">
         <LeaderboardHeader sessionShortcode={session.shortcode} />
 
