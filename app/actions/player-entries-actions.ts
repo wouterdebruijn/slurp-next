@@ -46,16 +46,64 @@ export async function getPlayerEntries(sessionId: string): Promise<{
     const playerNames: Record<string, string> = {};
     const playerCumulativeShots: Record<string, number> = {};
 
-    // Process entries to create timeline data
-    const timelineMap = new Map<string, Record<string, number>>();
+    // Find earliest entry to determine start time
+    let earliestTime: Date | null = null;
 
+    entries.forEach((entry) => {
+      const entryTime = new Date(entry.created);
+      if (!earliestTime || entryTime < earliestTime) {
+        earliestTime = entryTime;
+      }
+    });
+
+    // If no entries, return empty
+    if (!earliestTime) {
+      return {
+        timelineData: [],
+        playerNames: {},
+      };
+    }
+
+    // Calculate 5 hours ago from now
+    const now = new Date();
+    const fiveHoursAgo = new Date(now.getTime() - 5 * 60 * 60 * 1000);
+
+    // Use the later of (earliest entry time or 5 hours ago)
+    const startTime = earliestTime > fiveHoursAgo ? earliestTime : fiveHoursAgo;
+
+    // Round down to nearest 10-minute bucket
+    startTime.setMinutes(Math.floor(startTime.getMinutes() / 10) * 10);
+    startTime.setSeconds(0);
+    startTime.setMilliseconds(0);
+
+    // Create 10-minute buckets from start time to now
+    const buckets: Map<string, Record<string, number>> = new Map();
+    let currentBucket = new Date(startTime);
+
+    while (currentBucket <= now) {
+      buckets.set(currentBucket.toISOString(), {});
+      currentBucket = new Date(currentBucket.getTime() + 10 * 60 * 1000); // Add 10 minutes
+    }
+
+    // Process entries and aggregate into 10-minute buckets
     entries.forEach((entry) => {
       if (!entry.expand?.player) return;
 
       const playerId = entry.expand.player.id;
       const username = entry.expand.player.username;
-      const timestamp = new Date(entry.created).toISOString();
+      const entryTime = new Date(entry.created);
       const shots = Math.abs(entry.units) / shotUnitCount;
+
+      // Skip entries older than our start time (outside 5-hour window)
+      if (entryTime < startTime) {
+        // Still count these shots in cumulative total but don't show them on graph
+        playerNames[playerId] = username;
+        if (!playerCumulativeShots[playerId]) {
+          playerCumulativeShots[playerId] = 0;
+        }
+        playerCumulativeShots[playerId] += shots;
+        return;
+      }
 
       // Store player name
       playerNames[playerId] = username;
@@ -66,36 +114,28 @@ export async function getPlayerEntries(sessionId: string): Promise<{
       }
       playerCumulativeShots[playerId] += shots;
 
-      // Create or update timeline entry
-      if (!timelineMap.has(timestamp)) {
-        // Copy previous cumulative values
-        const previousEntries = Array.from(timelineMap.entries());
-        const lastEntry =
-          previousEntries.length > 0
-            ? previousEntries[previousEntries.length - 1][1]
-            : {};
+      // Find the 10-minute bucket this entry belongs to
+      const bucketTime = new Date(entryTime);
+      bucketTime.setMinutes(Math.floor(bucketTime.getMinutes() / 10) * 10);
+      bucketTime.setSeconds(0);
+      bucketTime.setMilliseconds(0);
+      const bucketKey = bucketTime.toISOString();
 
-        timelineMap.set(timestamp, { ...lastEntry });
-      }
-
-      const timelineEntry = timelineMap.get(timestamp)!;
-      timelineEntry[playerId] = playerCumulativeShots[playerId];
-
-      // Update all subsequent entries with the new cumulative value
-      let foundCurrent = false;
-      for (const [ts, data] of Array.from(timelineMap.entries())) {
-        if (foundCurrent) {
-          data[playerId] = playerCumulativeShots[playerId];
+      // Update this bucket and all subsequent buckets with the cumulative value
+      let foundBucket = false;
+      for (const [bucketTimestamp, data] of Array.from(buckets.entries())) {
+        if (bucketTimestamp === bucketKey) {
+          foundBucket = true;
         }
-        if (ts === timestamp) {
-          foundCurrent = true;
+        if (foundBucket) {
+          data[playerId] = playerCumulativeShots[playerId];
         }
       }
     });
 
     // Convert map to array
     const timelineData: PlayerTimelineData[] = Array.from(
-      timelineMap.entries()
+      buckets.entries()
     ).map(([timestamp, data]) => ({
       timestamp,
       ...data,

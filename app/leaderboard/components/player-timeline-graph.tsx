@@ -79,13 +79,25 @@ export default function PlayerTimelineGraph({
   });
 
   // Format data for chart - format timestamps for display
-  const formattedData = timelineData.map((entry) => ({
-    ...entry,
-    time: new Date(entry.timestamp).toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    }),
-  }));
+  const formattedData = timelineData.map((entry) => {
+    const date = new Date(entry.timestamp);
+    const isToday = date.toDateString() === new Date().toDateString();
+
+    return {
+      ...entry,
+      time: isToday
+        ? date.toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          })
+        : date.toLocaleDateString([], {
+            month: "short",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+    };
+  });
 
   return (
     <div className="bg-white rounded-2xl p-6 mb-8">
