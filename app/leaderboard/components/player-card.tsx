@@ -1,3 +1,5 @@
+import { getUsernameColor } from "@/utils/colorUtils";
+
 const RANK_EMOJIS = {
   1: "🥇",
   2: "🥈",
@@ -36,6 +38,9 @@ export default function PlayerCard({
   const rankColor = RANK_COLORS[rank as keyof typeof RANK_COLORS];
   const rankBorder = RANK_BORDER[rank as keyof typeof RANK_BORDER];
 
+  // Get color for non-top-3 players
+  const userColor = !isTop3 ? getUsernameColor(username) : null;
+
   return (
     <div
       className={`
@@ -43,12 +48,13 @@ export default function PlayerCard({
         ${
           isTop3
             ? `bg-linear-to-r ${rankColor} border-4 ${rankBorder}`
-            : "bg-white"
+            : "bg-white border-2 border-gray-200"
         }
         ${isCurrentPlayer ? "ring-4 ring-green-400" : ""}
       `}
       style={{
         animation: `slide-in ${0.2 + index * 0.05}s ease-out`,
+        ...(userColor && !isTop3 ? { background: userColor.bgColor } : {}),
       }}
     >
       <div className="p-4 flex items-center justify-between">
@@ -56,7 +62,7 @@ export default function PlayerCard({
           {/* Rank */}
           <div
             className={`text-3xl font-bold ${
-              isTop3 ? "text-white" : "text-gray-700"
+              isTop3 || userColor ? "text-white" : "text-gray-700"
             } min-w-15 text-center`}
           >
             {rankEmoji || `#${rank}`}
@@ -66,7 +72,7 @@ export default function PlayerCard({
           <div className="flex-1">
             <h3
               className={`text-xl font-bold ${
-                isTop3 ? "text-white" : "text-gray-800"
+                isTop3 || userColor ? "text-white" : "text-gray-800"
               }`}
             >
               {username}
@@ -78,14 +84,14 @@ export default function PlayerCard({
           <div className="text-right">
             <div
               className={`text-3xl font-bold ${
-                isTop3 ? "text-white" : "text-yellow-600"
+                isTop3 || userColor ? "text-white" : "text-yellow-600"
               }`}
             >
               {totalShots}
             </div>
             <div
               className={`text-xs ${
-                isTop3 ? "text-white/90" : "text-gray-600"
+                isTop3 || userColor ? "text-white/90" : "text-gray-600"
               }`}
             >
               shots

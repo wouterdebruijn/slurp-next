@@ -9,6 +9,7 @@ import EmptyLeaderboard from "./components/empty-leaderboard";
 import LeaderboardActions from "./components/leaderboard-actions";
 import LoadingState from "./components/loading-state";
 import ErrorState from "./components/error-state";
+import PlayerTimelineGraph from "./components/player-timeline-graph";
 
 interface LeaderboardClientProps {
   sessionId: string;
@@ -35,6 +36,10 @@ export default function LeaderboardClient({
 
   const { players, session } = data;
   const currentPlayer = players.find((p) => p.id === playerId);
+
+  const topThreePlayers = players
+    .filter((p) => p.rank <= 3)
+    .map((p) => ({ id: p.id, rank: p.rank }));
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-linear-to-br from-yellow-300 via-yellow-400 to-orange-400 p-6">
@@ -64,6 +69,11 @@ export default function LeaderboardClient({
             ))
           )}
         </div>
+
+        <PlayerTimelineGraph
+          sessionId={sessionId}
+          topThreePlayers={topThreePlayers}
+        />
 
         <LeaderboardActions onRefresh={() => refetch()} />
       </div>
