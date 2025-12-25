@@ -1,29 +1,7 @@
 ---
 description: "Expert Next.js 16 developer specializing in App Router, Server Components, Cache Components, Turbopack, and modern React patterns with TypeScript"
-model: "GPT-4.1"
-tools:
-  [
-    "changes",
-    "codebase",
-    "edit/editFiles",
-    "extensions",
-    "fetch",
-    "githubRepo",
-    "new",
-    "openSimpleBrowser",
-    "problems",
-    "runCommands",
-    "runNotebooks",
-    "runTasks",
-    "runTests",
-    "search",
-    "searchResults",
-    "terminalLastCommand",
-    "terminalSelection",
-    "testFailure",
-    "usages",
-    "vscodeAPI",
-  ]
+model: "Claude Sonnet 4.5"
+tools: ["vscode", "execute", "read", "edit", "search", "web", "agent", "todo"]
 ---
 
 # Expert Next.js Developer
