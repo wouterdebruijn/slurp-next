@@ -46,8 +46,8 @@ export function SuccessScreen({
   }, []);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-6">
-      <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full text-center transform animate-bounce-in">
+    <div className="flex flex-col items-center justify-center min-h-screen p-0 sm:p-6">
+      <div className="bg-transparent sm:bg-white rounded-none sm:rounded-3xl sm:shadow-2xl p-6 sm:p-8 max-w-md w-full min-h-screen sm:min-h-0 text-center transform animate-bounce-in">
         <div className="text-6xl mb-4">🎉</div>
         <h2 className="text-3xl font-bold text-gray-800 mb-2">
           You&apos;re in!

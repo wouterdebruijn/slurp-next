@@ -6,7 +6,7 @@ interface ErrorStateProps {
 
 export default function ErrorState({ onRetry }: ErrorStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-6">
+    <div className="flex flex-col items-center justify-center min-h-screen p-0 sm:p-6">
       <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-md w-full text-center">
         <div className="text-6xl mb-4">😢</div>
         <h2 className="text-2xl font-bold text-gray-800 mb-2">

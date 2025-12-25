@@ -126,7 +126,7 @@ export default function PlayerTimelineGraph({
         </div>
       </div>
       <ResponsiveContainer width="100%" height={320}>
-        <LineChart data={formattedData}>
+        <LineChart data={formattedData} margin={{ left: -20, right: 10, top: 5, bottom: 5 }}>
           <CartesianGrid strokeDasharray="5 5" stroke="#FDE68A" opacity={0.6} />
           <XAxis
             dataKey="time"
@@ -140,12 +140,6 @@ export default function PlayerTimelineGraph({
             strokeWidth={2}
             style={{ fontSize: "13px", fontWeight: "600" }}
             tick={{ fill: "#CA8A04" }}
-            label={{
-              value: "🥃 Total Shots",
-              angle: -90,
-              position: "insideLeft",
-              style: { fontSize: "14px", fontWeight: "700", fill: "#CA8A04" },
-            }}
           />
           <Tooltip
             contentStyle={{
