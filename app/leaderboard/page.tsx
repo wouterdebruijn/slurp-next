@@ -1,8 +1,11 @@
 "use client";
 
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getLeaderboardBySession } from "@/app/actions/leaderboard-actions";
 import { useSearchParams, useRouter } from "next/navigation";
+import { getClientPocketBase } from "@/utils/getClientPocketBase";
+import { PlayersViewResponse } from "@/pocketbase-types";
 
 const RANK_EMOJIS = {
   1: "🥇",
@@ -32,8 +35,31 @@ export default function LeaderboardPage() {
     queryKey: ["leaderboard", sessionId],
     queryFn: () => getLeaderboardBySession(sessionId!),
     enabled: !!sessionId,
-    refetchInterval: 10000, // Refetch every 10 seconds
+    refetchInterval: 10000, // Refetch every 10 seconds as fallback
   });
+
+  // Subscribe to real-time updates
+  useEffect(() => {
+    if (!sessionId) return;
+
+    const pb = getClientPocketBase();
+
+    // Subscribe to player_entries collection
+    pb.collection("player_entries").subscribe("*", (e) => {
+      // Filter for records in our session
+      const record = e.record as PlayersViewResponse;
+
+      if (record.session === sessionId) {
+        // Refetch to get latest data
+        refetch();
+      }
+    });
+
+    // Cleanup subscription on unmount
+    return () => {
+      pb.collection("player_entries").unsubscribe();
+    };
+  }, [sessionId, refetch]);
 
   if (!sessionId) {
     return (
@@ -48,7 +74,7 @@ export default function LeaderboardPage() {
           </p>
           <button
             onClick={() => router.push("/")}
-            className="px-6 py-3 bg-linear-to-r from-yellow-400 to-yellow-500 text-white font-bold rounded-2xl hover:from-yellow-500 hover:to-yellow-600 active:scale-95 transition-all"
+            className="px-6 py-3 bg-linear-to-r from-yellow-400 to-yellow-500 text-white font-bold rounded-2xl hover:from-yellow-500 hover:to-yellow-600 active:scale-95 transition-all cursor-pointer"
           >
             Join Session
           </button>
@@ -79,7 +105,7 @@ export default function LeaderboardPage() {
           </p>
           <button
             onClick={() => refetch()}
-            className="px-6 py-3 bg-linear-to-r from-yellow-400 to-yellow-500 text-white font-bold rounded-2xl hover:from-yellow-500 hover:to-yellow-600 active:scale-95 transition-all"
+            className="px-6 py-3 bg-linear-to-r from-yellow-400 to-yellow-500 text-white font-bold rounded-2xl hover:from-yellow-500 hover:to-yellow-600 active:scale-95 transition-all cursor-pointer"
           >
             Retry
           </button>
@@ -224,7 +250,7 @@ export default function LeaderboardPage() {
         <div className="mt-8 text-center">
           <button
             onClick={() => refetch()}
-            className="px-6 py-3 bg-white text-yellow-600 font-bold rounded-2xl hover:bg-white/90 active:scale-95 transition-all shadow-lg"
+            className="px-6 py-3 bg-white text-yellow-600 font-bold rounded-2xl hover:bg-white/90 active:scale-95 transition-all shadow-lg cursor-pointer"
           >
             🔄 Refresh Leaderboard
           </button>
@@ -234,7 +260,7 @@ export default function LeaderboardPage() {
         <div className="mt-4 text-center">
           <button
             onClick={() => router.push("/")}
-            className="text-white font-medium hover:underline"
+            className="text-white font-medium hover:underline cursor-pointer"
           >
             ← Back to Home
           </button>
