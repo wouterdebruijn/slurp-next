@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Slurp - Join the Party!",
+  title: "Slurp - Drink Together",
   description: "Join drinking sessions and have fun with friends",
   manifest: "/manifest.json",
   appleWebApp: {
