@@ -109,6 +109,7 @@ export type EntriesRecord = {
 export type PlayersRecord = {
   created: IsoAutoDateString;
   hardware_id?: number;
+  machine_reference_count?: number;
   id: string;
   session: RecordIdString;
   updated: IsoAutoDateString;

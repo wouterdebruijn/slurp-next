@@ -2,6 +2,7 @@ import {
   Collections,
   Create,
   PlayersResponse,
+  PlayersViewResponse,
   SessionsResponse,
 } from "@/pocketbase-types";
 import { KPNBody } from "@/types/kpn";
@@ -49,8 +50,8 @@ export async function POST(req: Request) {
     // Read per 4 bytes as two uint8 values (id, value)
     for (let i = 0; i < payloadUtf8.length; i += 4) {
       const glasId = payloadUtf8.readUint16BE(i);
-      const changedByValue = payloadUtf8.readUint16BE(i + 2);
-      console.log(`ID: ${glasId}, Value: ${changedByValue}`);
+      const takenUnitCount = payloadUtf8.readUint16BE(i + 2);
+      console.log(`ID: ${glasId}, Value: ${takenUnitCount}`);
 
       // Store in PocketBase
       const player = await pb
@@ -67,8 +68,27 @@ export async function POST(req: Request) {
         continue;
       }
 
+      const playerStats = await pb
+        .collection(Collections.PlayersView)
+        .getFirstListItem<PlayersViewResponse>(
+          `username = "${player.username}"`
+        );
+
+      const playerTakenCount = -(playerStats.taken as number);
+      let referenceCount = player.machine_reference_count || 0;
+
+      if (referenceCount > takenUnitCount) {
+        // Hardware has been restarted and lost its count. Adjust accordingly.
+        console.log(
+          `Adjusting taken count for player ${player.id} from ${playerTakenCount} to ${referenceCount} due to restart.`
+        );
+        referenceCount = 0;
+      }
+
+      const changedByValue = takenUnitCount - referenceCount;
+
       await pb.collection(Collections.Entries).create({
-        units: -changedByValue,
+        units: changedByValue,
         player: player.id,
         giveable: false,
         hide: false,
