@@ -68,13 +68,13 @@ export async function getPlayerEntries(sessionId: string): Promise<{
       };
     }
 
-    // Calculate 5 hours ago from now
+    // Calculate 8 hours ago from now
     const now = new Date();
-    const fiveHoursAgo = new Date(now.getTime() - 5 * 60 * 60 * 1000);
+    const eightHoursAgo = new Date(now.getTime() - 8 * 60 * 60 * 1000);
 
-    // Use the later of (earliest entry time or 5 hours ago)
+    // Use the later of (earliest entry time or 8 hours ago)
     const startTime = new Date(
-      Math.max(earliestTime.getTime(), fiveHoursAgo.getTime())
+      Math.max(earliestTime.getTime(), eightHoursAgo.getTime())
     );
 
     // Round down to nearest 10-minute bucket
