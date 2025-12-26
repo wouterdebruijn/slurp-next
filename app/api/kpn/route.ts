@@ -88,7 +88,7 @@ export async function POST(req: Request) {
       const changedByValue = takenUnitCount - referenceCount;
 
       await pb.collection(Collections.Entries).create({
-        units: changedByValue,
+        units: -changedByValue,
         player: player.id,
         giveable: false,
         hide: false,
