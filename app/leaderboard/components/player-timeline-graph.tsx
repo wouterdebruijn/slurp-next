@@ -125,7 +125,7 @@ export default function PlayerTimelineGraph({
           )}
         </div>
       </div>
-      <div className="h-80 xl:h-[600px]">
+      <div className="h-80 xl:h-150">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
             data={formattedData}
@@ -148,9 +148,6 @@ export default function PlayerTimelineGraph({
             />
             <YAxis
               stroke="#CA8A04"
-              strokeWidth={2}
-              style={{ fontSize: "13px", fontWeight: "600" }}
-              tick={{ fill: "#CA8A04" }}
               strokeWidth={2}
               style={{ fontSize: "13px", fontWeight: "600" }}
               tick={{ fill: "#CA8A04" }}
