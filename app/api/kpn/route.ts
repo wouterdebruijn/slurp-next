@@ -94,6 +94,11 @@ export async function POST(req: Request) {
         hide: false,
       } as Create<Collections.Entries>);
 
+      // Update player's machine_reference_count
+      await pb.collection(Collections.Players).update(player.id, {
+        machine_reference_count: takenUnitCount,
+      } as Create<Collections.Players>);
+
       console.log(
         `Created entry for player ${player.id} with units: ${changedByValue}`
       );
