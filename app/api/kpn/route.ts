@@ -88,6 +88,13 @@ export async function POST(req: Request) {
 
         const changedByValue = takenUnitCount - referenceCount;
 
+        if (changedByValue === 0) {
+          console.log(
+            `No change in taken units for player ${player.id}. Skipping entry creation.`
+          );
+          continue;
+        }
+
         await pb.collection(Collections.Entries).create({
           units: -changedByValue,
           player: player.id,
