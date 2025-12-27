@@ -6,8 +6,10 @@ import {
   SessionsResponse,
 } from "@/pocketbase-types";
 import { KPNBody } from "@/types/kpn";
+import { sendDiscordMessage } from "@/utils/discord";
 
 import getPocketBase from "@/utils/getPocketBase";
+import { ClientResponseError } from "pocketbase";
 
 function verifyKpnSecret(kpnBody: string, kpnSecret: string | undefined) {
   if (!kpnSecret) return null;
@@ -111,7 +113,26 @@ export async function POST(req: Request) {
           `Created entry for player ${player.id} with units: ${changedByValue}`
         );
       } catch (innerError) {
-        console.log("Error processing payload segment:", innerError);
+        if (innerError instanceof ClientResponseError) {
+          console.log("PocketBase ClientResponseError details:", {
+            message: innerError.message,
+            status: innerError.status,
+            data: innerError.data,
+          });
+
+          await sendDiscordMessage(
+            "Player Entry Processing Error",
+            `PocketBase error while processing payload segment: ${innerError.message} (Status: ${innerError.status})`
+          );
+          continue;
+        } else {
+          console.log("Error processing payload segment:", innerError);
+
+          await sendDiscordMessage(
+            "Player Entry Processing Error",
+            `Could not process payload segment: ${innerError}`
+          );
+        }
       }
     }
   } catch (error) {
