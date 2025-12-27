@@ -49,59 +49,63 @@ export async function POST(req: Request) {
 
     // Read per 4 bytes as two uint8 values (id, value)
     for (let i = 0; i < payloadUtf8.length; i += 4) {
-      const glasId = payloadUtf8.readUint16BE(i);
-      const takenUnitCount = payloadUtf8.readUint16BE(i + 2);
-      console.log(`ID: ${glasId}, Value: ${takenUnitCount}`);
+      try {
+        const glasId = payloadUtf8.readUint16BE(i);
+        const takenUnitCount = payloadUtf8.readUint16BE(i + 2);
+        console.log(`ID: ${glasId}, Value: ${takenUnitCount}`);
 
-      // Store in PocketBase
-      const player = await pb
-        .collection(Collections.Players)
-        .getFirstListItem<PlayersResponse<{ session: SessionsResponse }>>(
-          `hardware_id = "${glasId}" && session.active = true`,
-          {
-            expand: "session",
-          }
-        );
+        // Store in PocketBase
+        const player = await pb
+          .collection(Collections.Players)
+          .getFirstListItem<PlayersResponse<{ session: SessionsResponse }>>(
+            `hardware_id = "${glasId}" && session.active = true`,
+            {
+              expand: "session",
+            }
+          );
 
-      if (!player) {
-        console.log(`No active session for hardware ID: ${glasId}`);
-        continue;
-      }
+        if (!player) {
+          console.log(`No active session for hardware ID: ${glasId}`);
+          continue;
+        }
 
-      const playerStats = await pb
-        .collection(Collections.PlayersView)
-        .getFirstListItem<PlayersViewResponse>(
-          `username = "${player.username}"`
-        );
+        const playerStats = await pb
+          .collection(Collections.PlayersView)
+          .getFirstListItem<PlayersViewResponse>(
+            `username = "${player.username}"`
+          );
 
-      const playerTakenCount = -(playerStats.taken as number);
-      let referenceCount = player.machine_reference_count || 0;
+        const playerTakenCount = -(playerStats.taken as number);
+        let referenceCount = player.machine_reference_count || 0;
 
-      if (referenceCount > takenUnitCount) {
-        // Hardware has been restarted and lost its count. Adjust accordingly.
+        if (referenceCount > takenUnitCount) {
+          // Hardware has been restarted and lost its count. Adjust accordingly.
+          console.log(
+            `Adjusting taken count for player ${player.id} from ${playerTakenCount} to ${referenceCount} due to restart.`
+          );
+          referenceCount = 0;
+        }
+
+        const changedByValue = takenUnitCount - referenceCount;
+
+        await pb.collection(Collections.Entries).create({
+          units: -changedByValue,
+          player: player.id,
+          giveable: false,
+          hide: false,
+        } as Create<Collections.Entries>);
+
+        // Update player's machine_reference_count
+        await pb.collection(Collections.Players).update(player.id, {
+          machine_reference_count: takenUnitCount,
+        } as Create<Collections.Players>);
+
         console.log(
-          `Adjusting taken count for player ${player.id} from ${playerTakenCount} to ${referenceCount} due to restart.`
+          `Created entry for player ${player.id} with units: ${changedByValue}`
         );
-        referenceCount = 0;
+      } catch (innerError) {
+        console.log("Error processing payload segment:", innerError);
       }
-
-      const changedByValue = takenUnitCount - referenceCount;
-
-      await pb.collection(Collections.Entries).create({
-        units: -changedByValue,
-        player: player.id,
-        giveable: false,
-        hide: false,
-      } as Create<Collections.Entries>);
-
-      // Update player's machine_reference_count
-      await pb.collection(Collections.Players).update(player.id, {
-        machine_reference_count: takenUnitCount,
-      } as Create<Collections.Players>);
-
-      console.log(
-        `Created entry for player ${player.id} with units: ${changedByValue}`
-      );
     }
   } catch (error) {
     console.log("Discarded invalid KPN request", error);
