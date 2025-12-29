@@ -71,19 +71,12 @@ export async function POST(req: Request) {
           continue;
         }
 
-        const playerStats = await pb
-          .collection(Collections.PlayersView)
-          .getFirstListItem<PlayersViewResponse>(
-            `username = "${player.username}"`
-          );
-
-        const playerTakenCount = -(playerStats.taken as number);
         let referenceCount = player.machine_reference_count || 0;
 
         if (referenceCount > takenUnitCount) {
-          // Hardware has been restarted and lost its count. Adjust accordingly.
+          // Hardware lost track of count, likely due to a restart, reset reference count
           console.log(
-            `Adjusting taken count for player ${player.id} from ${playerTakenCount} to ${referenceCount} due to restart.`
+            `Adjusting taken count for player ${player.id} from ${referenceCount} to 0 due to restart.`
           );
           referenceCount = 0;
         }
