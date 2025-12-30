@@ -11,5 +11,6 @@ export default function getPocketBase(): TypedPocketBase {
   }
 
   pb.authStore.save(process.env.PB_TOKEN, null);
+  pb.autoCancellation(false);
   return pb;
 }
