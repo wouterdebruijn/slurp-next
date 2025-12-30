@@ -6,6 +6,7 @@ import {
   TypedPocketBase,
 } from "@/pocketbase-types";
 import { KPNBody } from "@/types/kpn";
+import { sendDiscordMessage } from "@/utils/discord";
 
 import getPocketBase from "@/utils/getPocketBase";
 
@@ -128,6 +129,18 @@ export async function POST(req: Request) {
       const segment = payloadUtf8.subarray(i, i + 4);
       promises.push(processPayloadSegment(segment, pb, kpnPayloadTimestamp));
     }
+
+    const result = await Promise.allSettled(promises);
+    result.forEach((res) => {
+      if (res.status === "rejected") {
+        console.log("Error processing segment:", res.reason);
+
+        sendDiscordMessage(
+          "Slurp payload processing error",
+          `Error: ${res.reason}`
+        );
+      }
+    });
 
     return new Response(null, { status: 201 });
   } catch (error) {
