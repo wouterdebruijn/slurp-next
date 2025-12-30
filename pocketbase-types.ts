@@ -109,8 +109,9 @@ export type EntriesRecord = {
 export type PlayersRecord = {
   created: IsoAutoDateString;
   hardware_id?: number;
-  machine_reference_count?: number;
   id: string;
+  machine_message_time?: IsoDateString;
+  machine_reference_count?: number;
   session: RecordIdString;
   updated: IsoAutoDateString;
   username: string;
@@ -215,9 +216,10 @@ type ProcessCreateAndUpdateFields<T> = Omit<
     // Omit AutoDate fields
     [K in keyof T as Extract<T[K], IsoAutoDateString> extends never
       ? K
-      : never]: T[K] extends infer U // Convert FileNameString to File
+      : never]: // Convert FileNameString to File
+    T[K] extends infer U
       ? U extends FileNameString | FileNameString[]
-        ? U extends unknown[]
+        ? U extends any[]
           ? File[]
           : File
         : U
