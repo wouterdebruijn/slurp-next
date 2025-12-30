@@ -2,14 +2,12 @@ import {
   Collections,
   Create,
   PlayersResponse,
-  PlayersViewResponse,
   SessionsResponse,
+  TypedPocketBase,
 } from "@/pocketbase-types";
 import { KPNBody } from "@/types/kpn";
-import { sendDiscordMessage } from "@/utils/discord";
 
 import getPocketBase from "@/utils/getPocketBase";
-import { ClientResponseError } from "pocketbase";
 
 function verifyKpnSecret(kpnBody: string, kpnSecret: string | undefined) {
   if (!kpnSecret) return null;
@@ -24,12 +22,86 @@ function verifyKpnSecret(kpnBody: string, kpnSecret: string | undefined) {
   });
 }
 
+class ProcessingError extends Error {}
+
+async function processPayloadSegment(
+  segment: Buffer<ArrayBuffer>,
+  pb: TypedPocketBase,
+  kpnPayloadTimestamp: Date
+) {
+  const glasId = segment.readUint16BE(0);
+  const takenUnitCount = segment.readUint16BE(2);
+  console.log(`ID: ${glasId}, Value: ${takenUnitCount}`);
+
+  // Store in PocketBase
+  const player = await pb
+    .collection(Collections.Players)
+    .getFirstListItem<PlayersResponse<{ session: SessionsResponse }>>(
+      `hardware_id = "${glasId}" && session.active = true`,
+      {
+        expand: "session",
+      }
+    )
+    .catch((e) => {
+      throw new ProcessingError(
+        `Failed to fetch player for hardware ID ${glasId}: ${e}`
+      );
+    });
+
+  const referenceTime = new Date(player.machine_message_time);
+
+  if (referenceTime >= kpnPayloadTimestamp) {
+    throw new ProcessingError(
+      `Stale message for player ${
+        player.id
+      }, message time ${kpnPayloadTimestamp.toISOString()} is not newer than last recorded time ${referenceTime.toISOString()}.`
+    );
+  }
+
+  let referenceCount = player.machine_reference_count || 0;
+
+  if (referenceCount > takenUnitCount) {
+    // Hardware lost track of count, likely due to a restart, reset reference count
+    console.log(
+      `Adjusting taken count for player ${player.id} from ${referenceCount} to 0 due to restart.`
+    );
+    referenceCount = 0;
+  }
+
+  const changedByValue = takenUnitCount - referenceCount;
+
+  if (changedByValue === 0) {
+    throw new ProcessingError(
+      `No change in unit count for player ${player.id}, skipping entry creation.`
+    );
+  }
+
+  await pb.collection(Collections.Entries).create({
+    units: -changedByValue,
+    player: player.id,
+    giveable: false,
+    hide: false,
+  } as Create<Collections.Entries>);
+
+  // Update player's machine_reference_count
+  await pb.collection(Collections.Players).update(player.id, {
+    machine_reference_count: takenUnitCount,
+    machine_message_time: kpnPayloadTimestamp.toISOString(),
+  } as Create<Collections.Players>);
+
+  console.log(
+    `Processed entry for player ${player.id}: changed by ${changedByValue} units.`
+  );
+}
+
 export async function POST(req: Request) {
   try {
     const textBody = await req.text();
     const kpnBody: KPNBody = JSON.parse(textBody);
     const messageToken = req.headers.get("Things-Message-Token");
     const kpnSecret = process.env.KPN_SECRET;
+
+    const kpnPayloadTimestamp = new Date(Math.floor(kpnBody[0].bt * 1000));
 
     const securityHash = await verifyKpnSecret(textBody, kpnSecret);
 
@@ -49,88 +121,18 @@ export async function POST(req: Request) {
 
     const pb = getPocketBase();
 
+    const promises: Promise<void>[] = [];
+
     // Read per 4 bytes as two uint8 values (id, value)
     for (let i = 0; i < payloadUtf8.length; i += 4) {
-      try {
-        const glasId = payloadUtf8.readUint16BE(i);
-        const takenUnitCount = payloadUtf8.readUint16BE(i + 2);
-        console.log(`ID: ${glasId}, Value: ${takenUnitCount}`);
-
-        // Store in PocketBase
-        const player = await pb
-          .collection(Collections.Players)
-          .getFirstListItem<PlayersResponse<{ session: SessionsResponse }>>(
-            `hardware_id = "${glasId}" && session.active = true`,
-            {
-              expand: "session",
-            }
-          );
-
-        if (!player) {
-          console.log(`No active session for hardware ID: ${glasId}`);
-          continue;
-        }
-
-        let referenceCount = player.machine_reference_count || 0;
-
-        if (referenceCount > takenUnitCount) {
-          // Hardware lost track of count, likely due to a restart, reset reference count
-          console.log(
-            `Adjusting taken count for player ${player.id} from ${referenceCount} to 0 due to restart.`
-          );
-          referenceCount = 0;
-        }
-
-        const changedByValue = takenUnitCount - referenceCount;
-
-        if (changedByValue === 0) {
-          console.log(
-            `No change in taken units for player ${player.id}. Skipping entry creation.`
-          );
-          continue;
-        }
-
-        await pb.collection(Collections.Entries).create({
-          units: -changedByValue,
-          player: player.id,
-          giveable: false,
-          hide: false,
-        } as Create<Collections.Entries>);
-
-        // Update player's machine_reference_count
-        await pb.collection(Collections.Players).update(player.id, {
-          machine_reference_count: takenUnitCount,
-        } as Create<Collections.Players>);
-
-        console.log(
-          `Created entry for player ${player.id} with units: ${changedByValue}`
-        );
-      } catch (innerError) {
-        if (innerError instanceof ClientResponseError) {
-          console.log("PocketBase ClientResponseError details:", {
-            message: innerError.message,
-            status: innerError.status,
-            data: innerError.data,
-          });
-
-          await sendDiscordMessage(
-            "Player Entry Processing Error",
-            `PocketBase error while processing payload segment: ${innerError.message} (Status: ${innerError.status})`
-          );
-          continue;
-        } else {
-          console.log("Error processing payload segment:", innerError);
-
-          await sendDiscordMessage(
-            "Player Entry Processing Error",
-            `Could not process payload segment: ${innerError}`
-          );
-        }
-      }
+      const segment = payloadUtf8.subarray(i, i + 4);
+      promises.push(processPayloadSegment(segment, pb, kpnPayloadTimestamp));
     }
+
+    return new Response(null, { status: 201 });
   } catch (error) {
     console.log("Discarded invalid KPN request", error);
   }
 
-  return new Response(null, { status: 201 });
+  return new Response("Bad Request", { status: 400 });
 }
