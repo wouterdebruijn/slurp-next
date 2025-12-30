@@ -50,31 +50,34 @@ export async function getPlayerEntries(sessionId: string): Promise<{
     // Track last player entry
     let lastPlayerEntry: { username: string; timestamp: string } | undefined;
 
-    // Find earliest entry to determine start time
-    let earliestTime: Date | null = new Date(Date.now());
+    // Find earliest and latest entry times
+    let earliestTime: number | undefined = undefined;
+    let latestTime: number | undefined = undefined;
 
     entries.forEach((entry) => {
-      const entryTime = new Date(entry.created);
+      const entryTime = new Date(entry.created).getTime();
       if (!earliestTime || entryTime < earliestTime) {
         earliestTime = entryTime;
+      }
+      if (!latestTime || entryTime > latestTime) {
+        latestTime = entryTime;
       }
     });
 
     // If no entries, return empty
-    if (!earliestTime) {
+    if (!earliestTime || !latestTime) {
       return {
         timelineData: [],
         playerNames: {},
       };
     }
 
-    // Calculate 8 hours ago from now
-    const now = new Date();
-    const eightHoursAgo = new Date(now.getTime() - 8 * 60 * 60 * 1000);
+    // Calculate 8 hours ago from the latest entry
+    const eightHoursBeforeLatest = new Date(latestTime - 8 * 60 * 60 * 1000);
 
-    // Use the later of (earliest entry time or 8 hours ago)
+    // Use the later of (earliest entry time or 8 hours before latest)
     const startTime = new Date(
-      Math.max(earliestTime.getTime(), eightHoursAgo.getTime())
+      Math.max(earliestTime, eightHoursBeforeLatest.getTime())
     );
 
     // Round down to nearest 10-minute bucket
@@ -82,11 +85,17 @@ export async function getPlayerEntries(sessionId: string): Promise<{
     startTime.setSeconds(0);
     startTime.setMilliseconds(0);
 
-    // Create 10-minute buckets from start time to now
+    // Round up latest time to nearest 10-minute bucket
+    const endTime = new Date(latestTime);
+    endTime.setMinutes(Math.ceil(endTime.getMinutes() / 10) * 10);
+    endTime.setSeconds(0);
+    endTime.setMilliseconds(0);
+
+    // Create 10-minute buckets from start time to end time (last entry)
     const buckets: Map<string, Record<string, number>> = new Map();
     let currentBucket = new Date(startTime);
 
-    while (currentBucket <= now) {
+    while (currentBucket <= endTime) {
       buckets.set(currentBucket.toISOString(), {});
       currentBucket = new Date(currentBucket.getTime() + 10 * 60 * 1000); // Add 10 minutes
     }
@@ -108,7 +117,7 @@ export async function getPlayerEntries(sessionId: string): Promise<{
         };
       }
 
-      // Skip entries older than our start time (outside 5-hour window)
+      // Skip entries older than our start time (outside 8-hour window from last entry)
       if (entryTime < startTime) {
         // Still count these shots in cumulative total but don't show them on graph
         playerNames[playerId] = username;
