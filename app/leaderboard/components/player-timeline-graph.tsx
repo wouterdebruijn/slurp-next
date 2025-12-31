@@ -92,21 +92,13 @@ export default function PlayerTimelineGraph({
   // Format data for chart - format timestamps for display
   const formattedData = timelineData.map((entry) => {
     const date = new Date(entry.timestamp);
-    const isToday = date.toDateString() === new Date().toDateString();
 
     return {
       ...entry,
-      time: isToday
-        ? date.toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          })
-        : date.toLocaleDateString([], {
-            month: "short",
-            day: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
+      time: date.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
     };
   });
 
@@ -164,7 +156,7 @@ export default function PlayerTimelineGraph({
               labelStyle={{ color: "#CA8A04", fontWeight: "700" }}
             />
             <Legend
-              wrapperStyle={{ fontSize: "13px", fontWeight: "600" }}
+              wrapperStyle={{ fontSize: "10px", fontWeight: "600" }}
               formatter={(value) => playerNames[value] || value}
             />
             {playerIds.map((playerId) => (
@@ -174,7 +166,7 @@ export default function PlayerTimelineGraph({
                 dataKey={playerId}
                 stroke={playerColors[playerId]}
                 strokeWidth={3}
-                dot={{ r: 4, strokeWidth: 2, fill: "#fff" }}
+                dot={false}
                 activeDot={{ r: 6 }}
                 name={playerNames[playerId]}
                 connectNulls
