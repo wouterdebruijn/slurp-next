@@ -120,7 +120,7 @@ export type PlayersRecord = {
 export type PlayersViewRecord<
   Tgiveable = unknown,
   Treceived = unknown,
-  Ttaken = unknown
+  Ttaken = unknown,
 > = {
   created: IsoAutoDateString;
   giveable?: null | Tgiveable;
@@ -173,7 +173,7 @@ export type PlayersViewResponse<
   Tgiveable = unknown,
   Treceived = unknown,
   Ttaken = unknown,
-  Texpand = unknown
+  Texpand = unknown,
 > = Required<PlayersViewRecord<Tgiveable, Treceived, Ttaken>> &
   BaseSystemFields<Texpand>;
 export type SessionsResponse<Texpand = unknown> = Required<SessionsRecord> &
@@ -216,10 +216,9 @@ type ProcessCreateAndUpdateFields<T> = Omit<
     // Omit AutoDate fields
     [K in keyof T as Extract<T[K], IsoAutoDateString> extends never
       ? K
-      : never]: // Convert FileNameString to File
-    T[K] extends infer U
+      : never]: T[K] extends infer U // Convert FileNameString to File
       ? U extends FileNameString | FileNameString[]
-        ? U extends any[]
+        ? U extends unknown[]
           ? File[]
           : File
         : U
@@ -277,6 +276,6 @@ export type Update<T extends keyof CollectionResponses> =
 
 export type TypedPocketBase = {
   collection<T extends keyof CollectionResponses>(
-    idOrName: T
+    idOrName: T,
   ): RecordService<CollectionResponses[T]>;
 } & PocketBase;

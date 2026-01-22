@@ -12,6 +12,7 @@ interface PlayerCardProps {
   totalShots: number;
   isCurrentPlayer: boolean;
   index: number;
+  hardwareId?: number;
 }
 
 export default function PlayerCard({
@@ -20,6 +21,7 @@ export default function PlayerCard({
   totalShots,
   isCurrentPlayer,
   index,
+  hardwareId,
 }: PlayerCardProps) {
   const rankEmoji = RANK_EMOJIS[rank as keyof typeof RANK_EMOJIS];
 
@@ -58,6 +60,11 @@ export default function PlayerCard({
               {username}
               {isCurrentPlayer && " (You)"}
             </h3>
+            {hardwareId !== undefined && (
+              <p className="text-[10px] xl:text-xs text-white/40 mt-0.5">
+                #{hardwareId}
+              </p>
+            )}
           </div>
 
           {/* Total Score */}

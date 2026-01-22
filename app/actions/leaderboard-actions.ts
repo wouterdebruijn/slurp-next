@@ -8,6 +8,7 @@ export interface LeaderboardPlayer {
   username: string;
   totalShots: number;
   rank: number;
+  hardwareId?: number;
 }
 
 export async function getLeaderboardBySession(sessionId: string): Promise<{
@@ -17,7 +18,7 @@ export async function getLeaderboardBySession(sessionId: string): Promise<{
   try {
     const pb = getPocketBase();
     const shotUnitCount = parseInt(
-      process.env.NEXT_PUBLIC_SHOT_UNIT_COUNT || "10"
+      process.env.NEXT_PUBLIC_SHOT_UNIT_COUNT || "10",
     );
 
     // Get session info
@@ -25,13 +26,27 @@ export async function getLeaderboardBySession(sessionId: string): Promise<{
       .collection("sessions")
       .getOne<SessionsResponse>(sessionId);
 
-    // Get all players from players_view collection
+    // Get all players from players_view collection with player expansion to get hardware_id
     const playersView = await pb
       .collection("players_view")
       .getFullList<PlayersViewResponse>({
         filter: `session = "${sessionId}"`,
         sort: "username",
       });
+
+    // Get hardware_id from players collection
+    const playerIds = playersView.map((p) => p.id);
+    const playersData = await pb
+      .collection("players")
+      .getFullList<{ id: string; hardware_id?: number }>({
+        filter: playerIds.map((id) => `id = "${id}"`).join(" || "),
+      });
+
+    // Create a map of player id to hardware_id
+    const hardwareIdMap = new Map<string, number | undefined>();
+    playersData.forEach((p) => {
+      hardwareIdMap.set(p.id, p.hardware_id);
+    });
 
     // Calculate shots for each player from taken stat
     const leaderboardPlayers: LeaderboardPlayer[] = playersView.map(
@@ -40,13 +55,17 @@ export async function getLeaderboardBySession(sessionId: string): Promise<{
         const takenValue = typeof player.taken === "number" ? player.taken : 0;
         const totalShots = Math.abs(takenValue) / shotUnitCount;
 
+        // Get hardware_id from the map
+        const hardwareId = hardwareIdMap.get(player.id);
+
         return {
           id: player.id,
           username: player.username,
           totalShots: Math.round(totalShots * 10) / 10, // Round to 1 decimal place
           rank: 0, // Will be set after sorting
+          hardwareId,
         };
-      }
+      },
     );
 
     // Sort by total shots (descending) and assign ranks
@@ -69,7 +88,7 @@ export async function getLeaderboardBySession(sessionId: string): Promise<{
 }
 
 export async function getPlayerSession(
-  playerId: string
+  playerId: string,
 ): Promise<string | null> {
   try {
     const pb = getPocketBase();
