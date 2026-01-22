@@ -43,6 +43,8 @@ export function JoinSessionForm({ shotglasId = "" }: JoinSessionFormProps) {
     queryKey: ["activeSessions"],
     queryFn: getActiveSessions,
     refetchInterval: 30000, // Refetch every 30 seconds
+    staleTime: 0, // Always consider data stale to ensure fresh fetch on mount
+    refetchOnMount: true, // Always refetch when component mounts
   });
 
   const {
@@ -83,12 +85,10 @@ export function JoinSessionForm({ shotglasId = "" }: JoinSessionFormProps) {
 
       if (result.success && result.player) {
         setSuccess(true);
-        // Redirect to leaderboard after a short delay
-        setTimeout(() => {
-          router.push(
-            `/leaderboard?session=${data.sessionId}&player=${result.player!.id}`
-          );
-        }, 2000);
+        // Navigate immediately to prevent navigation failures
+        router.push(
+          `/leaderboard?session=${data.sessionId}&player=${result.player.id}`,
+        );
       } else {
         setError(result.error || "Failed to join session");
       }

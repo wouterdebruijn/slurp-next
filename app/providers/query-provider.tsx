@@ -9,11 +9,12 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 60 * 1000, // 1 minute
-            refetchOnWindowFocus: false,
+            staleTime: 0, // Consider data immediately stale by default
+            refetchOnWindowFocus: true, // Refetch when window regains focus
+            refetchOnMount: true, // Always refetch when component mounts
           },
         },
-      })
+      }),
   );
 
   return (
