@@ -355,3 +355,89 @@ export async function getPlayerShotCount(
     };
   }
 }
+
+/**
+ * Get all entries for a session
+ */
+export async function getSessionEntries(sessionId: string) {
+  try {
+    const pb = await getAdminPocketBase();
+    if (!pb) {
+      throw new Error("Not authenticated");
+    }
+
+    const entries = await pb.collection("entries").getFullList<
+      EntriesResponse & {
+        expand?: {
+          player?: {
+            id: string;
+            username: string;
+            session: string;
+          };
+        };
+      }
+    >({
+      filter: `player.session = "${sessionId}"`,
+      sort: "-created",
+      expand: "player",
+    });
+
+    return entries;
+  } catch (error) {
+    console.error("Error fetching session entries:", error);
+    return [];
+  }
+}
+
+/**
+ * Update an entry's units
+ */
+export async function updateEntryUnits(
+  entryId: string,
+  units: number,
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const pb = await getAdminPocketBase();
+    if (!pb) {
+      return { success: false, error: "Not authenticated" };
+    }
+
+    await pb.collection("entries").update(entryId, { units });
+
+    revalidatePath("/admin/sessions");
+    revalidatePath("/leaderboard");
+    return { success: true };
+  } catch (error: unknown) {
+    console.error("Error updating entry:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to update entry",
+    };
+  }
+}
+
+/**
+ * Delete an entry
+ */
+export async function deleteEntry(
+  entryId: string,
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const pb = await getAdminPocketBase();
+    if (!pb) {
+      return { success: false, error: "Not authenticated" };
+    }
+
+    await pb.collection("entries").delete(entryId);
+
+    revalidatePath("/admin/sessions");
+    revalidatePath("/leaderboard");
+    return { success: true };
+  } catch (error: unknown) {
+    console.error("Error deleting entry:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to delete entry",
+    };
+  }
+}

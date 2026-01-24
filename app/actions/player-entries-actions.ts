@@ -23,7 +23,7 @@ export async function getPlayerEntries(sessionId: string): Promise<{
   try {
     const pb = getPocketBase();
     const shotUnitCount = parseInt(
-      process.env.NEXT_PUBLIC_SHOT_UNIT_COUNT || "20"
+      process.env.NEXT_PUBLIC_SHOT_UNIT_COUNT || "20",
     );
 
     // Fetch shot entries for the timeline (actual shots taken by players)
@@ -69,7 +69,7 @@ export async function getPlayerEntries(sessionId: string): Promise<{
       if (!entry.expand?.player) return;
       const playerId = entry.expand.player.id;
       const username = entry.expand.player.username;
-      
+
       playerNames[playerId] = username;
       if (!playerCumulativeUnits[playerId]) {
         playerCumulativeUnits[playerId] = 0;
@@ -108,7 +108,7 @@ export async function getPlayerEntries(sessionId: string): Promise<{
 
     // Use the later of (earliest entry time or 8 hours before latest)
     const startTime = new Date(
-      Math.max(earliestTime, eightHoursBeforeLatest.getTime())
+      Math.max(earliestTime, eightHoursBeforeLatest.getTime()),
     );
 
     // Round down to nearest 10-minute bucket
@@ -133,11 +133,13 @@ export async function getPlayerEntries(sessionId: string): Promise<{
 
     // Track cumulative shots at each point in time for the timeline
     const playerTimelineShots: Record<string, number> = {};
-    
+
     // Initialize with the baseline from all entries (including adjustments from before the window)
     Object.keys(playerCumulativeUnits).forEach((playerId) => {
       // Calculate shots from total units
-      playerTimelineShots[playerId] = Math.floor(Math.abs(playerCumulativeUnits[playerId]) / shotUnitCount);
+      playerTimelineShots[playerId] = Math.floor(
+        Math.abs(playerCumulativeUnits[playerId]) / shotUnitCount,
+      );
     });
 
     // Subtract the shots that will be added during the timeline window
@@ -145,11 +147,12 @@ export async function getPlayerEntries(sessionId: string): Promise<{
       if (!entry.expand?.player) return;
       const playerId = entry.expand.player.id;
       const entryTime = new Date(entry.created);
-      
+
       // If this entry is within the timeline window, we'll add it progressively
       if (entryTime >= startTime) {
         const shots = Math.abs(entry.units) / shotUnitCount;
-        playerTimelineShots[playerId] = (playerTimelineShots[playerId] || 0) - shots;
+        playerTimelineShots[playerId] =
+          (playerTimelineShots[playerId] || 0) - shots;
       }
     });
 
@@ -202,7 +205,7 @@ export async function getPlayerEntries(sessionId: string): Promise<{
 
     // Convert map to array
     const timelineData: PlayerTimelineData[] = Array.from(
-      buckets.entries()
+      buckets.entries(),
     ).map(([timestamp, data]) => ({
       timestamp,
       ...data,
