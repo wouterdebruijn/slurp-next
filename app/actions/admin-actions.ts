@@ -294,11 +294,12 @@ export async function removeShotsFromPlayer(
       process.env.NEXT_PUBLIC_SHOT_UNIT_COUNT || "20",
     );
 
-    // Create a positive entry to remove shots (multiplied by shot unit count)
+    // Create a positive entry with hide=true for admin adjustment
+    // This reduces the player's shot count without showing as a shot to take
     await pb.collection("entries").create({
       player: playerId,
       units: shots * shotUnitCount,
-      hide: false,
+      hide: true,
       giveable: false,
     });
 
@@ -330,18 +331,19 @@ export async function getPlayerShotCount(
       process.env.NEXT_PUBLIC_SHOT_UNIT_COUNT || "20",
     );
 
+    // Get all entries (including hidden ones for adjustments)
     const entries = await pb
       .collection("entries")
       .getFullList<EntriesResponse>({
-        filter: `player = "${playerId}" && hide != true && giveable != true`,
+        filter: `player = "${playerId}" && giveable != true`,
       });
 
-    // Calculate total shots (negative units are shots taken, divided by shot unit count)
-    const totalUnits = entries.reduce(
-      (sum, entry) => sum + Math.abs(entry.units),
-      0,
-    );
-    const totalShots = Math.floor(totalUnits / shotUnitCount);
+    // Calculate total shots:
+    // - Negative units with hide=false: shots taken by player
+    // - Positive units with hide=true: admin adjustments (reducing count)
+    // Sum all units and take absolute value of the result
+    const totalUnits = entries.reduce((sum, entry) => sum + entry.units, 0);
+    const totalShots = Math.floor(Math.abs(totalUnits) / shotUnitCount);
 
     return { count: totalShots };
   } catch (error: unknown) {

@@ -23,11 +23,11 @@ export async function getPlayerEntries(sessionId: string): Promise<{
   try {
     const pb = getPocketBase();
     const shotUnitCount = parseInt(
-      process.env.NEXT_PUBLIC_SHOT_UNIT_COUNT || "10"
+      process.env.NEXT_PUBLIC_SHOT_UNIT_COUNT || "20"
     );
 
-    // Fetch all entries for the session with player expansion
-    const entries = await pb.collection("entries").getFullList<
+    // Fetch shot entries for the timeline (actual shots taken by players)
+    const shotEntries = await pb.collection("entries").getFullList<
       EntriesRecord & {
         expand?: {
           player?: {
@@ -43,18 +43,49 @@ export async function getPlayerEntries(sessionId: string): Promise<{
       expand: "player",
     });
 
-    // Build player names map
-    const playerNames: Record<string, string> = {};
-    const playerCumulativeShots: Record<string, number> = {};
+    // Fetch all entries (including adjustments) for accurate cumulative calculations
+    const allEntries = await pb.collection("entries").getFullList<
+      EntriesRecord & {
+        expand?: {
+          player?: {
+            id: string;
+            username: string;
+            session: string;
+          };
+        };
+      }
+    >({
+      filter: `player.session = "${sessionId}" && giveable != true`,
+      sort: "created",
+      expand: "player",
+    });
 
-    // Track last player entry
+    // Build player names map and calculate actual cumulative shots (accounting for adjustments)
+    const playerNames: Record<string, string> = {};
+    const playerCumulativeUnits: Record<string, number> = {};
+
+    // First, calculate the actual cumulative units for each player (including adjustments)
+    allEntries.forEach((entry) => {
+      if (!entry.expand?.player) return;
+      const playerId = entry.expand.player.id;
+      const username = entry.expand.player.username;
+      
+      playerNames[playerId] = username;
+      if (!playerCumulativeUnits[playerId]) {
+        playerCumulativeUnits[playerId] = 0;
+      }
+      // Add all units (negative for shots, positive for adjustments)
+      playerCumulativeUnits[playerId] += entry.units;
+    });
+
+    // Track last player entry (from actual shots only)
     let lastPlayerEntry: { username: string; timestamp: string } | undefined;
 
-    // Find earliest and latest entry times
+    // Find earliest and latest entry times (from actual shots only)
     let earliestTime: number | undefined = undefined;
     let latestTime: number | undefined = undefined;
 
-    entries.forEach((entry) => {
+    shotEntries.forEach((entry) => {
       const entryTime = new Date(entry.created).getTime();
       if (!earliestTime || entryTime < earliestTime) {
         earliestTime = entryTime;
@@ -100,8 +131,30 @@ export async function getPlayerEntries(sessionId: string): Promise<{
       currentBucket = new Date(currentBucket.getTime() + 10 * 60 * 1000); // Add 10 minutes
     }
 
-    // Process entries and aggregate into 10-minute buckets
-    entries.forEach((entry) => {
+    // Track cumulative shots at each point in time for the timeline
+    const playerTimelineShots: Record<string, number> = {};
+    
+    // Initialize with the baseline from all entries (including adjustments from before the window)
+    Object.keys(playerCumulativeUnits).forEach((playerId) => {
+      // Calculate shots from total units
+      playerTimelineShots[playerId] = Math.floor(Math.abs(playerCumulativeUnits[playerId]) / shotUnitCount);
+    });
+
+    // Subtract the shots that will be added during the timeline window
+    shotEntries.forEach((entry) => {
+      if (!entry.expand?.player) return;
+      const playerId = entry.expand.player.id;
+      const entryTime = new Date(entry.created);
+      
+      // If this entry is within the timeline window, we'll add it progressively
+      if (entryTime >= startTime) {
+        const shots = Math.abs(entry.units) / shotUnitCount;
+        playerTimelineShots[playerId] = (playerTimelineShots[playerId] || 0) - shots;
+      }
+    });
+
+    // Process shot entries and aggregate into 10-minute buckets
+    shotEntries.forEach((entry) => {
       if (!entry.expand?.player) return;
 
       const playerId = entry.expand.player.id;
@@ -119,23 +172,14 @@ export async function getPlayerEntries(sessionId: string): Promise<{
 
       // Skip entries older than our start time (outside 8-hour window from last entry)
       if (entryTime < startTime) {
-        // Still count these shots in cumulative total but don't show them on graph
-        playerNames[playerId] = username;
-        if (!playerCumulativeShots[playerId]) {
-          playerCumulativeShots[playerId] = 0;
-        }
-        playerCumulativeShots[playerId] += shots;
         return;
       }
 
-      // Store player name
-      playerNames[playerId] = username;
-
-      // Update cumulative shots for this player
-      if (!playerCumulativeShots[playerId]) {
-        playerCumulativeShots[playerId] = 0;
+      // Update cumulative shots for this player in the timeline
+      if (!playerTimelineShots[playerId]) {
+        playerTimelineShots[playerId] = 0;
       }
-      playerCumulativeShots[playerId] += shots;
+      playerTimelineShots[playerId] += shots;
 
       // Find the 10-minute bucket this entry belongs to
       const bucketTime = new Date(entryTime);
@@ -151,7 +195,7 @@ export async function getPlayerEntries(sessionId: string): Promise<{
           foundBucket = true;
         }
         if (foundBucket) {
-          data[playerId] = playerCumulativeShots[playerId];
+          data[playerId] = playerTimelineShots[playerId];
         }
       }
     });

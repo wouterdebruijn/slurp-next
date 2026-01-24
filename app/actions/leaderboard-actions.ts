@@ -18,7 +18,7 @@ export async function getLeaderboardBySession(sessionId: string): Promise<{
   try {
     const pb = getPocketBase();
     const shotUnitCount = parseInt(
-      process.env.NEXT_PUBLIC_SHOT_UNIT_COUNT || "10",
+      process.env.NEXT_PUBLIC_SHOT_UNIT_COUNT || "20",
     );
 
     // Get session info
