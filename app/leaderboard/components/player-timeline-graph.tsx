@@ -19,15 +19,8 @@ interface PlayerTimelineGraphProps {
   topThreePlayers?: { id: string; rank: number }[];
 }
 
-const RANK_COLORS_HEX = {
-  1: "#FBBF24", // yellow-400
-  2: "#D1D5DB", // gray-300
-  3: "#FB923C", // orange-400
-};
-
 export default function PlayerTimelineGraph({
   sessionId,
-  topThreePlayers = [],
 }: PlayerTimelineGraphProps) {
   const { data, isLoading, error } = useQuery({
     queryKey: ["player-entries", sessionId],
