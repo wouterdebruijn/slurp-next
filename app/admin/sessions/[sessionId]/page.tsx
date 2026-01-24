@@ -1,4 +1,7 @@
-import { getSessionPlayers, getSessionEntries } from "@/app/actions/admin-actions";
+import {
+  getSessionPlayers,
+  getSessionEntries,
+} from "@/app/actions/admin-actions";
 import { getAllSessions } from "@/app/actions/admin-actions";
 import { notFound } from "next/navigation";
 import SessionTabs from "./components/session-tabs";
@@ -41,7 +44,11 @@ export default async function SessionPlayersPage({
         </div>
       </div>
 
-      <SessionTabs sessionId={sessionId} initialPlayers={players} initialEntries={entries} />
+      <SessionTabs
+        sessionId={sessionId}
+        initialPlayers={players}
+        initialEntries={entries}
+      />
     </div>
   );
 }

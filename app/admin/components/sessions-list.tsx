@@ -1,15 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { SessionsResponse } from "@/pocketbase-types";
 import SessionCard from "./session-card";
+import { getAllSessions } from "@/app/actions/admin-actions";
 
 export default function SessionsList({
   initialSessions,
 }: {
   initialSessions: SessionsResponse[];
 }) {
-  const [sessions] = useState(initialSessions);
+  const { data: sessions = [] } = useQuery({
+    queryKey: ["adminSessions"],
+    queryFn: async () => {
+      const result = await getAllSessions();
+      return result;
+    },
+    initialData: initialSessions,
+    refetchInterval: 30000,
+  });
 
   const activeSessions = sessions.filter((s) => s.active);
   const inactiveSessions = sessions.filter((s) => !s.active);

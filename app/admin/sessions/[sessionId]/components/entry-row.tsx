@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { EntriesResponse } from "@/pocketbase-types";
 import { updateEntryUnits, deleteEntry } from "@/app/actions/admin-actions";
-import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface EntryRowProps {
   entry: EntriesResponse & {
@@ -15,10 +15,11 @@ interface EntryRowProps {
       };
     };
   };
+  sessionId: string;
 }
 
-export default function EntryRow({ entry }: EntryRowProps) {
-  const router = useRouter();
+export default function EntryRow({ entry, sessionId }: EntryRowProps) {
+  const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
   const [unitsInput, setUnitsInput] = useState(entry.units.toString());
   const [loading, setLoading] = useState(false);
@@ -39,7 +40,10 @@ export default function EntryRow({ entry }: EntryRowProps) {
 
     if (result.success) {
       setIsEditing(false);
-      router.refresh();
+      // Invalidate the query to refetch the entries
+      await queryClient.invalidateQueries({
+        queryKey: ["sessionEntries", sessionId],
+      });
     } else {
       setError(result.error || "Failed to update entry");
     }
@@ -56,7 +60,10 @@ export default function EntryRow({ entry }: EntryRowProps) {
     const result = await deleteEntry(entry.id);
 
     if (result.success) {
-      router.refresh();
+      // Invalidate the query to refetch the entries
+      await queryClient.invalidateQueries({
+        queryKey: ["sessionEntries", sessionId],
+      });
     } else {
       alert(result.error || "Failed to delete entry");
     }

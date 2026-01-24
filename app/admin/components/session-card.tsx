@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { SessionsResponse } from "@/pocketbase-types";
 import { updateSession, deleteSession } from "@/app/actions/admin-actions";
-import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 
 export default function SessionCard({
@@ -11,7 +11,7 @@ export default function SessionCard({
 }: {
   session: SessionsResponse;
 }) {
-  const router = useRouter();
+  const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
   const [shortcode, setShortcode] = useState(session.shortcode);
   const [loading, setLoading] = useState(false);
@@ -25,7 +25,7 @@ export default function SessionCard({
     setLoading(false);
 
     if (result.success) {
-      router.refresh();
+      await queryClient.invalidateQueries({ queryKey: ["adminSessions"] });
     } else {
       setError(result.error || "Failed to update session");
     }
@@ -40,7 +40,7 @@ export default function SessionCard({
 
     if (result.success) {
       setIsEditing(false);
-      router.refresh();
+      await queryClient.invalidateQueries({ queryKey: ["adminSessions"] });
     } else {
       setError(result.error || "Failed to update session");
     }
@@ -62,7 +62,7 @@ export default function SessionCard({
     setLoading(false);
 
     if (result.success) {
-      router.refresh();
+      await queryClient.invalidateQueries({ queryKey: ["adminSessions"] });
     } else {
       alert(result.error || "Failed to delete session");
     }
@@ -155,6 +155,15 @@ export default function SessionCard({
           className="text-sm bg-blue-600 hover:bg-blue-700 text-white px-3 py-1.5 rounded transition-colors"
         >
           Manage Players
+        </Link>
+
+        <Link
+          href={`/leaderboard?session=${session.id}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-sm bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded transition-colors"
+        >
+          View Leaderboard
         </Link>
 
         <button

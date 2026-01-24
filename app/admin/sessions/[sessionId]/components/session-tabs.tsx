@@ -60,7 +60,7 @@ export default function SessionTabs({
       )}
 
       {activeTab === "entries" && (
-        <EntriesList initialEntries={initialEntries} />
+        <EntriesList sessionId={sessionId} initialEntries={initialEntries} />
       )}
     </div>
   );

@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { createSession } from "@/app/actions/admin-actions";
-import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function CreateSessionButton() {
-  const router = useRouter();
+  const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
   const [shortcode, setShortcode] = useState("");
   const [active, setActive] = useState(true);
@@ -24,7 +24,7 @@ export default function CreateSessionButton() {
         setIsOpen(false);
         setShortcode("");
         setActive(true);
-        router.refresh();
+        await queryClient.invalidateQueries({ queryKey: ["adminSessions"] });
       } else {
         setError(result.error || "Failed to create session");
       }

@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { EntriesResponse } from "@/pocketbase-types";
+import { getSessionEntries } from "@/app/actions/admin-actions";
 import EntryRow from "./entry-row";
 
 interface EntriesListProps {
+  sessionId: string;
   initialEntries: (EntriesResponse & {
     expand?: {
       player?: {
@@ -16,15 +18,21 @@ interface EntriesListProps {
   })[];
 }
 
-export default function EntriesList({ initialEntries }: EntriesListProps) {
-  const [entries] = useState(initialEntries);
+export default function EntriesList({
+  sessionId,
+  initialEntries,
+}: EntriesListProps) {
+  const { data: entries = initialEntries } = useQuery({
+    queryKey: ["sessionEntries", sessionId],
+    queryFn: () => getSessionEntries(sessionId),
+    initialData: initialEntries,
+    refetchInterval: 30000, // Refetch every 30 seconds
+  });
 
   if (entries.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-400 text-lg">
-          No entries in this session yet.
-        </p>
+        <p className="text-gray-400 text-lg">No entries in this session yet.</p>
       </div>
     );
   }
@@ -57,7 +65,7 @@ export default function EntriesList({ initialEntries }: EntriesListProps) {
           </thead>
           <tbody className="divide-y divide-gray-700">
             {entries.map((entry) => (
-              <EntryRow key={entry.id} entry={entry} />
+              <EntryRow key={entry.id} entry={entry} sessionId={sessionId} />
             ))}
           </tbody>
         </table>
