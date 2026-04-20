@@ -10,12 +10,10 @@ import {
 export default function PlayerCard({
   player,
   shotCount,
-  loading: initialLoading,
   onShotsUpdated,
 }: {
   player: PlayersResponse;
-  shotCount: number;
-  loading: boolean;
+  shotCount: number | undefined;
   onShotsUpdated: () => void;
 }) {
   const [isAdding, setIsAdding] = useState(false);
@@ -74,7 +72,7 @@ export default function PlayerCard({
       <div className="bg-gray-900 rounded-lg p-4">
         <p className="text-sm text-gray-400">Total Shots</p>
         <p className="text-3xl font-bold text-white mt-1">
-          {initialLoading ? "..." : shotCount}
+          {shotCount ?? "—"}
         </p>
       </div>
 

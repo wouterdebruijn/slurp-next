@@ -1,46 +1,42 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { PlayersResponse } from "@/pocketbase-types";
 import { getPlayerShotCount } from "@/app/actions/admin-actions";
 import PlayerCard from "./player-card";
 
 export default function PlayersList({
+  sessionId,
   initialPlayers,
 }: {
   sessionId: string;
   initialPlayers: PlayersResponse[];
 }) {
-  const [players] = useState(initialPlayers);
-  const [playerShots, setPlayerShots] = useState<Record<string, number>>({});
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    // Fetch shot counts for all players
-    const fetchShotCounts = async () => {
-      setLoading(true);
-      const counts: Record<string, number> = {};
-
-      await Promise.all(
-        players.map(async (player) => {
-          const result = await getPlayerShotCount(player.id);
-          counts[player.id] = result.count;
-        }),
+  const { data: shotCounts = {} } = useQuery({
+    queryKey: ["playerShotCounts", sessionId],
+    queryFn: async () => {
+      const entries = await Promise.all(
+        initialPlayers.map((p) =>
+          getPlayerShotCount(p.id).then((r) => [p.id, r.count] as const),
+        ),
       );
+      return Object.fromEntries(entries);
+    },
+    staleTime: 10_000,
+  });
 
-      setPlayerShots(counts);
-      setLoading(false);
-    };
+  const handleShotsUpdated = useCallback(
+    () =>
+      queryClient.invalidateQueries({
+        queryKey: ["playerShotCounts", sessionId],
+      }),
+    [queryClient, sessionId],
+  );
 
-    fetchShotCounts();
-  }, [players]);
-
-  const refreshPlayerShots = async (playerId: string) => {
-    const result = await getPlayerShotCount(playerId);
-    setPlayerShots((prev) => ({ ...prev, [playerId]: result.count }));
-  };
-
-  if (players.length === 0) {
+  if (initialPlayers.length === 0) {
     return (
       <div className="text-center py-12">
         <p className="text-gray-400 text-lg">
@@ -53,13 +49,12 @@ export default function PlayersList({
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {players.map((player) => (
+      {initialPlayers.map((player) => (
         <PlayerCard
           key={player.id}
           player={player}
-          shotCount={playerShots[player.id] || 0}
-          loading={loading}
-          onShotsUpdated={() => refreshPlayerShots(player.id)}
+          shotCount={shotCounts[player.id]}
+          onShotsUpdated={handleShotsUpdated}
         />
       ))}
     </div>
