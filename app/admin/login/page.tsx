@@ -1,36 +1,24 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useForm } from "@tanstack/react-form";
 import { adminLogin } from "@/app/actions/admin-actions";
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-
-    try {
-      const result = await adminLogin(email, password);
-
+  const form = useForm({
+    defaultValues: { email: "", password: "" },
+    onSubmit: async ({ value }) => {
+      const result = await adminLogin(value.email, value.password);
       if (result.success) {
         router.push("/admin");
         router.refresh();
       } else {
-        setError(result.error || "Login failed");
+        form.setErrorMap({ onSubmit: result.error || "Login failed" });
       }
-    } catch {
-      setError("An unexpected error occurred");
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+  });
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 px-4">
@@ -43,7 +31,13 @@ export default function AdminLoginPage() {
             Sign in to access the admin dashboard
           </p>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              form.handleSubmit();
+            }}
+            className="space-y-6"
+          >
             <div>
               <label
                 htmlFor="email"
@@ -51,14 +45,30 @@ export default function AdminLoginPage() {
               >
                 Email
               </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="admin@example.com"
+              <form.Field
+                name="email"
+                validators={{
+                  onChange: ({ value }) =>
+                    !value.includes("@") ? "Valid email required" : undefined,
+                }}
+                children={(field) => (
+                  <>
+                    <input
+                      id="email"
+                      type="email"
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      onBlur={field.handleBlur}
+                      className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      placeholder="admin@example.com"
+                    />
+                    {field.state.meta.errors.length > 0 && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {field.state.meta.errors.join(", ")}
+                      </p>
+                    )}
+                  </>
+                )}
               />
             </div>
 
@@ -69,30 +79,52 @@ export default function AdminLoginPage() {
               >
                 Password
               </label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="••••••••"
+              <form.Field
+                name="password"
+                children={(field) => (
+                  <>
+                    <input
+                      id="password"
+                      type="password"
+                      value={field.state.value}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      onBlur={field.handleBlur}
+                      className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      placeholder="••••••••"
+                    />
+                    {field.state.meta.errors.length > 0 && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {field.state.meta.errors.join(", ")}
+                      </p>
+                    )}
+                  </>
+                )}
               />
             </div>
 
-            {error && (
-              <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-lg text-sm">
-                {error}
-              </div>
-            )}
+            <form.Subscribe
+              selector={(state) => state.errorMap.onSubmit}
+              children={(err) =>
+                err ? (
+                  <div className="bg-red-50 border border-red-300 rounded p-3 text-red-600 text-sm mb-4">
+                    {String(err)}
+                  </div>
+                ) : null
+              }
+            />
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800"
-            >
-              {loading ? "Signing in..." : "Sign In"}
-            </button>
+            <form.Subscribe
+              selector={(state) => state.isSubmitting}
+              children={(isSubmitting) => (
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800"
+                >
+                  {isSubmitting ? "Signing in..." : "Sign In"}
+                </button>
+              )}
+            />
           </form>
         </div>
 
