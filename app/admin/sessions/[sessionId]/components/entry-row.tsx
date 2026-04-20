@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useForm } from "@tanstack/react-form";
 import { EntriesResponse } from "@/pocketbase-types";
 import { updateEntryUnits, deleteEntry } from "@/app/actions/admin-actions";
 import { useQueryClient } from "@tanstack/react-query";
@@ -21,46 +22,35 @@ interface EntryRowProps {
 export default function EntryRow({ entry, sessionId }: EntryRowProps) {
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
-  const [unitsInput, setUnitsInput] = useState(entry.units.toString());
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
-  const handleSave = async () => {
-    setLoading(true);
-    setError("");
-
-    const parsedUnits = parseInt(unitsInput);
-    if (isNaN(parsedUnits)) {
-      setError("Invalid number");
-      setLoading(false);
-      return;
-    }
-
-    const result = await updateEntryUnits(entry.id, parsedUnits);
-
-    if (result.success) {
-      setIsEditing(false);
-      // Invalidate the query to refetch the entries
-      await queryClient.invalidateQueries({
-        queryKey: ["sessionEntries", sessionId],
-      });
-    } else {
-      setError(result.error || "Failed to update entry");
-    }
-
-    setLoading(false);
-  };
+  const form = useForm({
+    defaultValues: { units: entry.units.toString() },
+    onSubmit: async ({ value }) => {
+      const parsed = parseInt(value.units, 10);
+      if (isNaN(parsed)) {
+        form.setErrorMap({ onSubmit: "Invalid number" });
+        return;
+      }
+      const result = await updateEntryUnits(entry.id, parsed);
+      if (result.success) {
+        setIsEditing(false);
+        queryClient.invalidateQueries({ queryKey: ["sessionEntries", sessionId] });
+      } else {
+        form.setErrorMap({ onSubmit: result.error || "Failed to update" });
+      }
+    },
+  });
 
   const handleDelete = async () => {
     if (!confirm("Are you sure you want to delete this entry?")) {
       return;
     }
 
-    setLoading(true);
+    setDeleteLoading(true);
     const result = await deleteEntry(entry.id);
 
     if (result.success) {
-      // Invalidate the query to refetch the entries
       await queryClient.invalidateQueries({
         queryKey: ["sessionEntries", sessionId],
       });
@@ -68,7 +58,7 @@ export default function EntryRow({ entry, sessionId }: EntryRowProps) {
       alert(result.error || "Failed to delete entry");
     }
 
-    setLoading(false);
+    setDeleteLoading(false);
   };
 
   const formatDate = (dateString: string) => {
@@ -90,37 +80,69 @@ export default function EntryRow({ entry, sessionId }: EntryRowProps) {
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
         {isEditing ? (
-          <div className="flex items-center gap-2">
-            <input
-              type="text"
-              inputMode="numeric"
-              value={unitsInput}
-              onChange={(e) => {
-                const value = e.target.value;
-                // Allow empty string, minus sign, and valid numbers
-                if (value === "" || value === "-" || /^-?\d+$/.test(value)) {
-                  setUnitsInput(value);
-                }
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  handleSave();
-                } else if (e.key === "Escape") {
-                  setIsEditing(false);
-                  setUnitsInput(entry.units.toString());
-                  setError("");
-                }
-              }}
-              onBlur={handleSave}
-              autoFocus
-              className="w-24 px-2 py-1 bg-gray-700 border border-gray-600 rounded text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="0"
-            />
-            {error && <span className="text-red-400 text-xs">{error}</span>}
-          </div>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              form.handleSubmit();
+            }}
+          >
+            <div className="flex items-center gap-2">
+              <form.Field
+                name="units"
+                validators={{
+                  onChange: ({ value }) => {
+                    if (value === "" || value === "-") return undefined;
+                    return /^-?\d+$/.test(value)
+                      ? undefined
+                      : "Must be a valid integer";
+                  },
+                }}
+                children={(field) => (
+                  <input
+                    type="text"
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    onBlur={() => form.handleSubmit()}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        form.handleSubmit();
+                      }
+                      if (e.key === "Escape") {
+                        setIsEditing(false);
+                        form.reset();
+                      }
+                    }}
+                    autoFocus
+                    className="w-24 px-2 py-1 bg-gray-700 border border-gray-600 rounded text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="0"
+                  />
+                )}
+              />
+              <form.Subscribe
+                selector={(state) => [
+                  state.fieldMeta.units?.errors,
+                  state.errorMap.onSubmit,
+                ]}
+                children={([fieldErrors, submitError]) => {
+                  const error =
+                    (Array.isArray(fieldErrors) && fieldErrors[0]) ||
+                    submitError;
+                  return error ? (
+                    <span className="text-red-400 text-xs">
+                      {String(error)}
+                    </span>
+                  ) : null;
+                }}
+              />
+            </div>
+          </form>
         ) : (
           <button
-            onClick={() => setIsEditing(true)}
+            onClick={() => {
+              form.reset();
+              setIsEditing(true);
+            }}
             className={`font-mono cursor-pointer hover:bg-gray-700 px-2 py-1 rounded transition-colors ${
               entry.units < 0 ? "text-red-400" : "text-green-400"
             }`}
@@ -162,8 +184,7 @@ export default function EntryRow({ entry, sessionId }: EntryRowProps) {
               <button
                 onClick={() => {
                   setIsEditing(false);
-                  setUnitsInput(entry.units.toString());
-                  setError("");
+                  form.reset();
                 }}
                 className="text-sm bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded transition-colors"
               >
@@ -173,7 +194,7 @@ export default function EntryRow({ entry, sessionId }: EntryRowProps) {
           ) : (
             <button
               onClick={handleDelete}
-              disabled={loading}
+              disabled={deleteLoading}
               className="text-sm text-red-400 hover:text-red-300 transition-colors disabled:opacity-50"
             >
               Delete
