@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useForm } from "@tanstack/react-form";
 import { SessionsResponse } from "@/pocketbase-types";
 import { updateSession, deleteSession } from "@/app/actions/admin-actions";
 import { useQueryClient } from "@tanstack/react-query";
@@ -13,39 +14,35 @@ export default function SessionCard({
 }) {
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
-  const [shortcode, setShortcode] = useState(session.shortcode);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [isMutating, setIsMutating] = useState(false);
+
+  const form = useForm({
+    defaultValues: { shortcode: session.shortcode },
+    onSubmit: async ({ value }) => {
+      const result = await updateSession(session.id, {
+        shortcode: value.shortcode,
+      });
+      if (result.success) {
+        setIsEditing(false);
+        queryClient.invalidateQueries({ queryKey: ["adminSessions"] });
+      } else {
+        form.setErrorMap({ onSubmit: result.error || "Failed to update" });
+      }
+    },
+  });
 
   const handleToggleActive = async () => {
-    setLoading(true);
+    setIsMutating(true);
     const result = await updateSession(session.id, {
       active: !session.active,
     });
-    setLoading(false);
+    setIsMutating(false);
 
     if (result.success) {
       await queryClient.invalidateQueries({ queryKey: ["adminSessions"] });
     } else {
-      setError(result.error || "Failed to update session");
+      alert(result.error || "Failed to update session");
     }
-  };
-
-  const handleUpdateShortcode = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-
-    const result = await updateSession(session.id, { shortcode });
-
-    if (result.success) {
-      setIsEditing(false);
-      await queryClient.invalidateQueries({ queryKey: ["adminSessions"] });
-    } else {
-      setError(result.error || "Failed to update session");
-    }
-
-    setLoading(false);
   };
 
   const handleDelete = async () => {
@@ -57,9 +54,9 @@ export default function SessionCard({
       return;
     }
 
-    setLoading(true);
+    setIsMutating(true);
     const result = await deleteSession(session.id);
-    setLoading(false);
+    setIsMutating(false);
 
     if (result.success) {
       await queryClient.invalidateQueries({ queryKey: ["adminSessions"] });
@@ -73,29 +70,74 @@ export default function SessionCard({
       <div className="flex items-start justify-between">
         <div className="flex-1">
           {isEditing ? (
-            <form onSubmit={handleUpdateShortcode} className="space-y-2">
-              <input
-                type="text"
-                value={shortcode}
-                onChange={(e) => setShortcode(e.target.value.toUpperCase())}
-                className="w-full px-3 py-1 bg-gray-700 border border-gray-600 rounded text-white uppercase focus:outline-none focus:ring-2 focus:ring-blue-500"
-                maxLength={10}
-              />
-              {error && <p className="text-red-400 text-xs">{error}</p>}
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                form.handleSubmit();
+              }}
+              className="space-y-2"
+            >
+              <form.Field
+                name="shortcode"
+                validators={{
+                  onChange: ({ value }) =>
+                    value.length < 1
+                      ? "Required"
+                      : value.length > 10
+                        ? "Max 10 chars"
+                        : undefined,
+                }}
+              >
+                {(field) => (
+                  <input
+                    type="text"
+                    value={field.state.value}
+                    onChange={(e) =>
+                      field.handleChange(e.target.value.toUpperCase())
+                    }
+                    onBlur={field.handleBlur}
+                    className="w-full px-3 py-1 bg-gray-700 border border-gray-600 rounded text-white uppercase focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    maxLength={10}
+                  />
+                )}
+              </form.Field>
+              <form.Subscribe selector={(state) => state.errors}>
+                {(errors) =>
+                  errors.length > 0 && (
+                    <p className="text-red-400 text-xs">
+                      {errors.join(", ")}
+                    </p>
+                  )
+                }
+              </form.Subscribe>
+              <form.Subscribe selector={(state) => state.errorMap}>
+                {(errorMap) =>
+                  errorMap.onSubmit ? (
+                    <p className="text-red-400 text-xs">
+                      {String(errorMap.onSubmit)}
+                    </p>
+                  ) : null
+                }
+              </form.Subscribe>
               <div className="flex gap-2">
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded transition-colors disabled:opacity-50"
+                <form.Subscribe
+                  selector={(state) => state.isSubmitting}
                 >
-                  Save
-                </button>
+                  {(isSubmitting) => (
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded transition-colors disabled:opacity-50"
+                    >
+                      {isSubmitting ? "Saving..." : "Save"}
+                    </button>
+                  )}
+                </form.Subscribe>
                 <button
                   type="button"
                   onClick={() => {
                     setIsEditing(false);
-                    setShortcode(session.shortcode);
-                    setError("");
+                    form.reset();
                   }}
                   className="text-xs bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded transition-colors"
                 >
@@ -140,7 +182,7 @@ export default function SessionCard({
 
         <button
           onClick={handleToggleActive}
-          disabled={loading}
+          disabled={isMutating}
           className={`text-sm px-3 py-1.5 rounded transition-colors disabled:opacity-50 ${
             session.active
               ? "bg-yellow-600 hover:bg-yellow-700 text-white"
@@ -168,7 +210,7 @@ export default function SessionCard({
 
         <button
           onClick={handleDelete}
-          disabled={loading}
+          disabled={isMutating}
           className="text-sm bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded transition-colors disabled:opacity-50"
         >
           Delete
