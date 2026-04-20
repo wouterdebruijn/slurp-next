@@ -1,39 +1,30 @@
 "use client";
 
 import { useState } from "react";
+import { useForm } from "@tanstack/react-form";
 import { createSession } from "@/app/actions/admin-actions";
 import { useQueryClient } from "@tanstack/react-query";
 
 export default function CreateSessionButton() {
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
-  const [shortcode, setShortcode] = useState("");
-  const [active, setActive] = useState(true);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-
-    try {
-      const result = await createSession({ shortcode, active });
-
+  const form = useForm({
+    defaultValues: { shortcode: "", active: true },
+    onSubmit: async ({ value }) => {
+      const result = await createSession({
+        shortcode: value.shortcode,
+        active: value.active,
+      });
       if (result.success) {
         setIsOpen(false);
-        setShortcode("");
-        setActive(true);
-        await queryClient.invalidateQueries({ queryKey: ["adminSessions"] });
+        form.reset();
+        queryClient.invalidateQueries({ queryKey: ["adminSessions"] });
       } else {
-        setError(result.error || "Failed to create session");
+        form.setErrorMap({ onSubmit: result.error || "Failed to create session" });
       }
-    } catch {
-      setError("An unexpected error occurred");
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+  });
 
   if (!isOpen) {
     return (
@@ -53,7 +44,13 @@ export default function CreateSessionButton() {
           Create New Session
         </h2>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            form.handleSubmit();
+          }}
+          className="space-y-4"
+        >
           <div>
             <label
               htmlFor="shortcode"
@@ -61,55 +58,91 @@ export default function CreateSessionButton() {
             >
               Session Shortcode
             </label>
-            <input
-              id="shortcode"
-              type="text"
-              value={shortcode}
-              onChange={(e) => setShortcode(e.target.value.toUpperCase())}
-              required
-              maxLength={10}
-              className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase"
-              placeholder="SLURP2025"
+            <form.Field
+              name="shortcode"
+              validators={{
+                onChange: ({ value }) =>
+                  value.length < 1
+                    ? "Required"
+                    : value.length > 10
+                    ? "Max 10 chars"
+                    : undefined,
+              }}
+              children={(field) => (
+                <>
+                  <input
+                    id="shortcode"
+                    type="text"
+                    value={field.state.value}
+                    onChange={(e) =>
+                      field.handleChange(e.target.value.toUpperCase())
+                    }
+                    onBlur={field.handleBlur}
+                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase"
+                    placeholder="SLURP2025"
+                  />
+                  {field.state.meta.errors.length > 0 && (
+                    <p className="text-red-500 text-sm">
+                      {field.state.meta.errors.join(", ")}
+                    </p>
+                  )}
+                </>
+              )}
             />
           </div>
 
           <div className="flex items-center">
-            <input
-              id="active"
-              type="checkbox"
-              checked={active}
-              onChange={(e) => setActive(e.target.checked)}
-              className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500 focus:ring-2"
+            <form.Field
+              name="active"
+              children={(field) => (
+                <input
+                  id="active"
+                  type="checkbox"
+                  checked={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500 focus:ring-2"
+                />
+              )}
             />
             <label htmlFor="active" className="ml-2 text-sm text-gray-300">
               Active (players can join)
             </label>
           </div>
 
-          {error && (
-            <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-2 rounded-lg text-sm">
-              {error}
-            </div>
-          )}
+          <form.Subscribe
+            selector={(state) => state.errorMap.onSubmit}
+            children={(err) =>
+              err ? (
+                <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-2 rounded-lg text-sm">
+                  {String(err)}
+                </div>
+              ) : null
+            }
+          />
 
           <div className="flex gap-3 pt-2">
             <button
               type="button"
               onClick={() => {
                 setIsOpen(false);
-                setError("");
+                form.reset();
               }}
               className="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
             >
               Cancel
             </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? "Creating..." : "Create"}
-            </button>
+            <form.Subscribe
+              selector={(state) => state.isSubmitting}
+              children={(isSubmitting) => (
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? "Creating..." : "Create"}
+                </button>
+              )}
+            />
           </div>
         </form>
       </div>
