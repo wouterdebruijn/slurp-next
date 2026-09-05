@@ -8,34 +8,26 @@ import {
 import { sendDiscordMessage } from "@/utils/discord";
 import getPocketBase from "@/utils/getPocketBase";
 
-interface DeviceTag {
-  id: number;
-  count: number;
-}
-
-interface DevicePayload {
-  device: string;
-  tags: DeviceTag[];
-}
-
 class ProcessingError extends Error {}
 
-async function processTag(
-  tag: DeviceTag,
+async function processPayloadSegment(
+  segment: Buffer,
   pb: TypedPocketBase,
   timestamp: Date
 ) {
-  console.log(`Device tag — ID: ${tag.id}, Count: ${tag.count}`);
+  const glasId = segment.readUint16BE(0);
+  const takenUnitCount = segment.readUint16BE(2);
+  console.log(`Device segment — ID: ${glasId}, Value: ${takenUnitCount}`);
 
   const player = await pb
     .collection(Collections.Players)
     .getFirstListItem<PlayersResponse<{ session: SessionsResponse }>>(
-      `hardware_id = "${tag.id}" && session.active = true`,
+      `hardware_id = "${glasId}" && session.active = true`,
       { expand: "session" }
     )
     .catch((e) => {
       throw new ProcessingError(
-        `Failed to fetch player for hardware ID ${tag.id}: ${e}`
+        `Failed to fetch player for hardware ID ${glasId}: ${e}`
       );
     });
 
@@ -49,7 +41,7 @@ async function processTag(
 
   let referenceCount = player.machine_reference_count || 0;
 
-  if (referenceCount > tag.count) {
+  if (referenceCount > takenUnitCount) {
     // Device restarted and lost its running count — reset reference
     console.log(
       `Adjusting count for player ${player.id} from ${referenceCount} to 0 due to device restart.`
@@ -57,7 +49,7 @@ async function processTag(
     referenceCount = 0;
   }
 
-  const changedByValue = tag.count - referenceCount;
+  const changedByValue = takenUnitCount - referenceCount;
 
   if (changedByValue === 0) {
     throw new ProcessingError(
@@ -73,12 +65,12 @@ async function processTag(
   } as Create<Collections.Entries>);
 
   await pb.collection(Collections.Players).update(player.id, {
-    machine_reference_count: tag.count,
+    machine_reference_count: takenUnitCount,
     machine_message_time: timestamp.toISOString(),
   } as Create<Collections.Players>);
 
   console.log(
-    `Processed tag for player ${player.id}: changed by ${changedByValue} units.`
+    `Processed segment for player ${player.id}: changed by ${changedByValue} units.`
   );
 }
 
@@ -96,36 +88,34 @@ export async function POST(req: Request) {
     return new Response("Unauthorized", { status: 401 });
   }
 
-  let payload: DevicePayload;
+  // The device sends the same raw binary payload as decoded from the LoRa/KPN
+  // uplink: a sequence of 4-byte segments (uint16BE id, uint16BE count).
+  const payload = Buffer.from(await req.arrayBuffer());
 
-  try {
-    payload = await req.json();
-  } catch {
-    return new Response("Bad Request: invalid JSON", { status: 400 });
+  if (payload.length === 0 || payload.length % 4 !== 0) {
+    return new Response("Bad Request: invalid payload length", { status: 400 });
   }
 
-  if (
-    !payload.device ||
-    !Array.isArray(payload.tags) ||
-    payload.tags.length === 0
-  ) {
-    return new Response("Bad Request: missing device or tags", { status: 400 });
-  }
-
-  console.log(`Device payload from ${payload.device}:`, payload.tags);
+  console.log(`Device payload (${payload.length} bytes)`);
 
   const pb = getPocketBase();
   const timestamp = new Date();
 
-  const promises = payload.tags.map((tag) => processTag(tag, pb, timestamp));
+  const promises: Promise<void>[] = [];
+
+  // Read per 4 bytes as two uint16 values (id, count)
+  for (let i = 0; i < payload.length; i += 4) {
+    const segment = payload.subarray(i, i + 4);
+    promises.push(processPayloadSegment(segment, pb, timestamp));
+  }
 
   const results = await Promise.allSettled(promises);
   results.forEach((res) => {
     if (res.status === "rejected") {
-      console.log("Error processing tag:", res.reason);
+      console.log("Error processing segment:", res.reason);
       sendDiscordMessage(
         "Slurp device payload processing error",
-        `Device: ${payload.device}\nError: ${res.reason}`
+        `Error: ${res.reason}`
       );
     }
   });
