@@ -1,7 +1,12 @@
 "use server";
 
 import getPocketBase from "@/utils/getPocketBase";
-import { PlayersViewResponse, SessionsResponse } from "@/pocketbase-types";
+import {
+  EntriesResponse,
+  PlayersResponse,
+  PlayersViewResponse,
+  SessionsResponse,
+} from "@/pocketbase-types";
 
 export interface LeaderboardPlayer {
   id: string;
@@ -26,47 +31,43 @@ export async function getLeaderboardBySession(sessionId: string): Promise<{
       .collection("sessions")
       .getOne<SessionsResponse>(sessionId);
 
-    // Get all players from players_view collection with player expansion to get hardware_id
-    const playersView = await pb
-      .collection("players_view")
-      .getFullList<PlayersViewResponse>({
+    // Get all players in the session
+    const players = await pb
+      .collection("players")
+      .getFullList<PlayersResponse>({
         filter: `session = "${sessionId}"`,
         sort: "username",
       });
 
-    // Get hardware_id from players collection
-    const playerIds = playersView.map((p) => p.id);
-    const playersData = await pb
-      .collection("players")
-      .getFullList<{ id: string; hardware_id?: number }>({
-        filter: playerIds.map((id) => `id = "${id}"`).join(" || "),
-      });
-
-    // Create a map of player id to hardware_id
-    const hardwareIdMap = new Map<string, number | undefined>();
-    playersData.forEach((p) => {
-      hardwareIdMap.set(p.id, p.hardware_id);
+    // Get every (visible) entry for the session so we can sum them.
+    // A negative entry is a shot taken; a positive entry is a correction that
+    // brings the count back down. Summing everything reflects both directions.
+    const entries = await pb.collection("entries").getFullList<EntriesResponse>({
+      filter: `player.session = "${sessionId}" && hide != true`,
     });
 
-    // Calculate shots for each player from taken stat
-    const leaderboardPlayers: LeaderboardPlayer[] = playersView.map(
-      (player) => {
-        // taken is stored as negative, so invert it and divide by SHOT_UNIT_COUNT
-        const takenValue = typeof player.taken === "number" ? player.taken : 0;
-        const totalShots = Math.abs(takenValue) / shotUnitCount;
+    // Sum the raw units per player.
+    const unitsByPlayer = new Map<string, number>();
+    entries.forEach((entry) => {
+      unitsByPlayer.set(
+        entry.player,
+        (unitsByPlayer.get(entry.player) || 0) + entry.units,
+      );
+    });
 
-        // Get hardware_id from the map
-        const hardwareId = hardwareIdMap.get(player.id);
+    const leaderboardPlayers: LeaderboardPlayer[] = players.map((player) => {
+      // Units are negative for shots taken, so negate to get a shot count.
+      const totalUnits = unitsByPlayer.get(player.id) || 0;
+      const totalShots = -totalUnits / shotUnitCount;
 
-        return {
-          id: player.id,
-          username: player.username,
-          totalShots: Math.round(totalShots * 10) / 10, // Round to 1 decimal place
-          rank: 0, // Will be set after sorting
-          hardwareId,
-        };
-      },
-    );
+      return {
+        id: player.id,
+        username: player.username,
+        totalShots: Math.round(totalShots * 10) / 10, // Round to 1 decimal place
+        rank: 0, // Will be set after sorting
+        hardwareId: player.hardware_id,
+      };
+    });
 
     // Sort by total shots (descending) and assign ranks
     leaderboardPlayers.sort((a, b) => b.totalShots - a.totalShots);

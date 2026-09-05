@@ -155,7 +155,7 @@ export default function PlayerTimelineGraph({
             {playerIds.map((playerId) => (
               <Line
                 key={playerId}
-                type="monotone"
+                type="linear"
                 dataKey={playerId}
                 stroke={playerColors[playerId]}
                 strokeWidth={3}
