@@ -1,78 +1,5 @@
-import {
-  Collections,
-  Create,
-  PlayersResponse,
-  SessionsResponse,
-  TypedPocketBase,
-} from "@/pocketbase-types";
-import { sendDiscordMessage } from "@/utils/discord";
+import { processPayloadSegment } from "@/utils/processPayloadSegment";
 import getPocketBase from "@/utils/getPocketBase";
-
-class ProcessingError extends Error {}
-
-async function processPayloadSegment(
-  segment: Buffer,
-  pb: TypedPocketBase,
-  timestamp: Date
-) {
-  const glasId = segment.readUint16BE(0);
-  const takenUnitCount = segment.readUint16BE(2);
-  console.log(`Device segment — ID: ${glasId}, Value: ${takenUnitCount}`);
-
-  const player = await pb
-    .collection(Collections.Players)
-    .getFirstListItem<PlayersResponse<{ session: SessionsResponse }>>(
-      `hardware_id = "${glasId}" && session.active = true`,
-      { expand: "session" }
-    )
-    .catch((e) => {
-      throw new ProcessingError(
-        `Failed to fetch player for hardware ID ${glasId}: ${e}`
-      );
-    });
-
-  const referenceTime = new Date(player.machine_message_time);
-
-  if (referenceTime >= timestamp) {
-    throw new ProcessingError(
-      `Stale message for player ${player.id}, message time ${timestamp.toISOString()} is not newer than last recorded time ${referenceTime.toISOString()}.`
-    );
-  }
-
-  let referenceCount = player.machine_reference_count || 0;
-
-  if (referenceCount > takenUnitCount) {
-    // Device restarted and lost its running count — reset reference
-    console.log(
-      `Adjusting count for player ${player.id} from ${referenceCount} to 0 due to device restart.`
-    );
-    referenceCount = 0;
-  }
-
-  const changedByValue = takenUnitCount - referenceCount;
-
-  if (changedByValue === 0) {
-    throw new ProcessingError(
-      `No change in unit count for player ${player.id}, skipping.`
-    );
-  }
-
-  await pb.collection(Collections.Entries).create({
-    units: -changedByValue,
-    player: player.id,
-    giveable: false,
-    hide: false,
-  } as Create<Collections.Entries>);
-
-  await pb.collection(Collections.Players).update(player.id, {
-    machine_reference_count: takenUnitCount,
-    machine_message_time: timestamp.toISOString(),
-  } as Create<Collections.Players>);
-
-  console.log(
-    `Processed segment for player ${player.id}: changed by ${changedByValue} units.`
-  );
-}
 
 export async function POST(req: Request) {
   // Shared-secret bearer token authentication
@@ -113,10 +40,6 @@ export async function POST(req: Request) {
   results.forEach((res) => {
     if (res.status === "rejected") {
       console.log("Error processing segment:", res.reason);
-      sendDiscordMessage(
-        "Slurp device payload processing error",
-        `Error: ${res.reason}`
-      );
     }
   });
 

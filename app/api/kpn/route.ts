@@ -1,12 +1,5 @@
-import {
-  Collections,
-  Create,
-  PlayersResponse,
-  SessionsResponse,
-  TypedPocketBase,
-} from "@/pocketbase-types";
 import { KPNBody } from "@/types/kpn";
-import { sendDiscordMessage } from "@/utils/discord";
+import { processPayloadSegment } from "@/utils/processPayloadSegment";
 
 import getPocketBase from "@/utils/getPocketBase";
 
@@ -21,78 +14,6 @@ function verifyKpnSecret(kpnBody: string, kpnSecret: string | undefined) {
       .join("");
     return hashString;
   });
-}
-
-class ProcessingError extends Error {}
-
-async function processPayloadSegment(
-  segment: Buffer<ArrayBuffer>,
-  pb: TypedPocketBase,
-  kpnPayloadTimestamp: Date
-) {
-  const glasId = segment.readUint16BE(0);
-  const takenUnitCount = segment.readUint16BE(2);
-  console.log(`ID: ${glasId}, Value: ${takenUnitCount}`);
-
-  // Store in PocketBase
-  const player = await pb
-    .collection(Collections.Players)
-    .getFirstListItem<PlayersResponse<{ session: SessionsResponse }>>(
-      `hardware_id = "${glasId}" && session.active = true`,
-      {
-        expand: "session",
-      }
-    )
-    .catch((e) => {
-      throw new ProcessingError(
-        `Failed to fetch player for hardware ID ${glasId}: ${e}`
-      );
-    });
-
-  const referenceTime = new Date(player.machine_message_time);
-
-  if (referenceTime >= kpnPayloadTimestamp) {
-    throw new ProcessingError(
-      `Stale message for player ${
-        player.id
-      }, message time ${kpnPayloadTimestamp.toISOString()} is not newer than last recorded time ${referenceTime.toISOString()}.`
-    );
-  }
-
-  let referenceCount = player.machine_reference_count || 0;
-
-  if (referenceCount > takenUnitCount) {
-    // Hardware lost track of count, likely due to a restart, reset reference count
-    console.log(
-      `Adjusting taken count for player ${player.id} from ${referenceCount} to 0 due to restart.`
-    );
-    referenceCount = 0;
-  }
-
-  const changedByValue = takenUnitCount - referenceCount;
-
-  if (changedByValue === 0) {
-    throw new ProcessingError(
-      `No change in unit count for player ${player.id}, skipping entry creation.`
-    );
-  }
-
-  await pb.collection(Collections.Entries).create({
-    units: -changedByValue,
-    player: player.id,
-    giveable: false,
-    hide: false,
-  } as Create<Collections.Entries>);
-
-  // Update player's machine_reference_count
-  await pb.collection(Collections.Players).update(player.id, {
-    machine_reference_count: takenUnitCount,
-    machine_message_time: kpnPayloadTimestamp.toISOString(),
-  } as Create<Collections.Players>);
-
-  console.log(
-    `Processed entry for player ${player.id}: changed by ${changedByValue} units.`
-  );
 }
 
 export async function POST(req: Request) {
@@ -134,11 +55,6 @@ export async function POST(req: Request) {
     result.forEach((res) => {
       if (res.status === "rejected") {
         console.log("Error processing segment:", res.reason);
-
-        sendDiscordMessage(
-          "Slurp payload processing error",
-          `Error: ${res.reason}`
-        );
       }
     });
 
