@@ -23,7 +23,7 @@ interface PlayerTimelineGraphProps {
 export default function PlayerTimelineGraph({
   sessionId,
 }: PlayerTimelineGraphProps) {
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, dataUpdatedAt } = useQuery({
     queryKey: ["player-entries", sessionId],
     queryFn: () => getPlayerEntries(sessionId),
     refetchInterval: 5000,
@@ -83,18 +83,33 @@ export default function PlayerTimelineGraph({
     playerColors[playerId] = hashStringToColor(playerNames[playerId]);
   });
 
-  // Format data for chart - format timestamps for display
-  const formattedData = timelineData.map((entry) => {
-    const date = new Date(entry.timestamp);
+  const formatTime = (time: number) =>
+    new Date(time).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
 
-    return {
-      ...entry,
-      time: date.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-    };
+  // Plot on a real time axis (PocketBase timestamps use a space, not a "T")
+  const formattedData = timelineData.map((entry) => ({
+    ...entry,
+    time: Date.parse(entry.timestamp.replace(" ", "T")),
+  }));
+
+  // Carry every line on to the last fetch, otherwise the latest shot is only a
+  // vertical tick at the right edge of a step chart
+  const lastPoint = formattedData[formattedData.length - 1];
+  formattedData.push({
+    ...lastPoint,
+    time: Math.max(dataUpdatedAt, lastPoint.time),
   });
+
+  // Evenly spaced time labels rather than one per entry, which bunch up
+  const startTime = formattedData[0].time;
+  const endTime = formattedData[formattedData.length - 1].time;
+  const timeTicks = Array.from(
+    { length: 6 },
+    (_, i) => startTime + ((endTime - startTime) * i) / 5,
+  );
 
   return (
     <div className="relative bg-grave rounded-3xl p-6 pt-8 xl:p-10 xl:pt-12 short:p-6 short:pt-8 mb-8 lg:mb-0 lg:flex-1 lg:min-h-0 lg:flex lg:flex-col border-3 border-hex glow-hex">
@@ -125,6 +140,11 @@ export default function PlayerTimelineGraph({
             />
             <XAxis
               dataKey="time"
+              type="number"
+              scale="time"
+              domain={["dataMin", "dataMax"]}
+              ticks={timeTicks}
+              tickFormatter={formatTime}
               stroke="#FFB454"
               strokeWidth={2}
               style={{ fontSize: "11px", fontWeight: "600" }}
@@ -136,6 +156,7 @@ export default function PlayerTimelineGraph({
             <YAxis
               // Headroom above the leader so their line doesn't hug the top edge
               domain={[0, (dataMax: number) => Math.ceil(dataMax * 1.15) || 1]}
+              allowDecimals={false}
               stroke="#FFB454"
               strokeWidth={2}
               style={{ fontSize: "13px", fontWeight: "600" }}
@@ -151,6 +172,7 @@ export default function PlayerTimelineGraph({
                 boxShadow: "0 4px 18px rgba(0, 0, 0, 0.6)",
               }}
               labelStyle={{ color: "#FFB454", fontWeight: "700" }}
+              labelFormatter={(time) => formatTime(Number(time))}
             />
             <Legend
               wrapperStyle={{ fontSize: "10px", fontWeight: "600" }}
@@ -159,7 +181,8 @@ export default function PlayerTimelineGraph({
             {playerIds.map((playerId) => (
               <Line
                 key={playerId}
-                type="linear"
+                // A shot is an instant jump, not a gradual slope
+                type="stepAfter"
                 dataKey={playerId}
                 stroke={playerColors[playerId]}
                 strokeWidth={3}

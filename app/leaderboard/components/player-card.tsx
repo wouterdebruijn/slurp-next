@@ -12,7 +12,6 @@ interface PlayerCardProps {
   totalShots: number;
   isCurrentPlayer: boolean;
   index: number;
-  hardwareId?: number;
 }
 
 export default function PlayerCard({
@@ -21,7 +20,6 @@ export default function PlayerCard({
   totalShots,
   isCurrentPlayer,
   index,
-  hardwareId,
 }: PlayerCardProps) {
   const rankEmoji = RANK_EMOJIS[rank as keyof typeof RANK_EMOJIS];
 
@@ -45,33 +43,25 @@ export default function PlayerCard({
       <div className="p-4 lg:py-0 lg:px-[2vh] lg:h-full flex items-center justify-between">
         <div className="flex items-center gap-4 lg:gap-[2vh] flex-1">
           {/* Rank */}
-          <div className="font-spooky text-3xl lg:text-[3.4vh] tracking-wide text-bone min-w-15 lg:min-w-[7vh] text-center">
+          <div className="font-spooky text-3xl lg:text-[4vh] tracking-wide text-bone min-w-15 lg:min-w-[8vh] text-center">
             {rankEmoji || `#${rank}`}
           </div>
 
           {/* Player Info */}
           <div className="flex-1">
             <h3
-              className="text-xl lg:text-[2.5vh] lg:leading-tight font-bold"
+              className="text-xl lg:text-[3.2vh] lg:leading-tight font-bold"
               style={{ color: userColor }}
             >
               {username}
               {isCurrentPlayer && " (You)"}
               {rankEmoji && <span className="animate-pulse"> 🦇</span>}
             </h3>
-            {hardwareId !== undefined && (
-              <p className="text-[10px] lg:text-[1.2vh] text-mist/70 mt-0.5 lg:mt-0 short:hidden">
-                #{hardwareId}
-              </p>
-            )}
           </div>
 
           {/* Total Score */}
-          <div className="text-right">
-            <div className="font-spooky text-3xl lg:text-[3.4vh] leading-none tracking-wide text-bone">
-              {totalShots}
-            </div>
-            <div className="text-xs lg:text-[1.4vh] text-mist short:hidden">shots</div>
+          <div className="font-spooky text-4xl lg:text-[4.4vh] leading-none tracking-wide text-bone text-right">
+            {totalShots}
           </div>
         </div>
       </div>

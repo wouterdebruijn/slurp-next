@@ -78,7 +78,6 @@ export default function LeaderboardClient({
                       totalShots={player.totalShots}
                       isCurrentPlayer={player.id === playerId}
                       index={index}
-                      hardwareId={player.hardwareId}
                     />
                   ))
                 )}
