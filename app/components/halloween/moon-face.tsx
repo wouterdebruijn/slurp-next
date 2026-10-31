@@ -8,8 +8,8 @@ import { play, prefersReducedMotion, rand, wait } from "./motion";
 // (https://commons.wikimedia.org/wiki/File:Charlie_Kirk_by_Gage_Skidmore.jpg),
 // CC BY-SA 3.0 (https://creativecommons.org/licenses/by-sa/3.0/).
 const FACE_SRC = "/moon-face.png";
-// Barely-there: you only notice it if you're looking at the moon
-const PEAK_OPACITY = 0.07;
+// Faint but recognisable once you look at the moon
+const PEAK_OPACITY = 0.15;
 
 /**
  * Every minute or two a face faintly surfaces in the moon, lingers, and sinks
@@ -67,7 +67,7 @@ export default function MoonFace() {
       style={{
         opacity: 0,
         // Tinted to the moon and blended into its surface, edges feathered away
-        filter: "grayscale(1) sepia(0.6) contrast(1.2)",
+        filter: "grayscale(1) sepia(0.6) contrast(1.4)",
         mixBlendMode: "multiply",
         maskImage: "radial-gradient(circle, black 40%, transparent 70%)",
         WebkitMaskImage: "radial-gradient(circle, black 40%, transparent 70%)",
