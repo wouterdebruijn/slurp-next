@@ -10,7 +10,7 @@ export default async function Home({
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const { shotglasId } = await searchParams;
+  const { shotglasId, session } = await searchParams;
 
   // If shotglasId is provided, check for auto-redirect conditions
   if (shotglasId && typeof shotglasId === "string") {
@@ -25,5 +25,10 @@ export default async function Home({
     }
   }
 
-  return <JoinSessionForm shotglasId={shotglasId as string | undefined} />;
+  return (
+    <JoinSessionForm
+      shotglasId={shotglasId as string | undefined}
+      initialSessionId={typeof session === "string" ? session : undefined}
+    />
+  );
 }

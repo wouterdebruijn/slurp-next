@@ -30,9 +30,13 @@ type JoinFormData = z.infer<typeof joinSchema>;
 
 interface JoinSessionFormProps {
   shotglasId?: string;
+  initialSessionId?: string;
 }
 
-export function JoinSessionForm({ shotglasId = "" }: JoinSessionFormProps) {
+export function JoinSessionForm({
+  shotglasId = "",
+  initialSessionId,
+}: JoinSessionFormProps) {
   const router = useRouter();
 
   const [isPending, startTransition] = useTransition();
@@ -66,12 +70,13 @@ export function JoinSessionForm({ shotglasId = "" }: JoinSessionFormProps) {
       ? sessions.find((s) => s.id === sessionId) || null
       : null;
 
-  // Auto-select first session when sessions load
+  // Auto-select the session from the URL, or the first session, when sessions load
   useEffect(() => {
     if (sessions && sessions.length > 0 && !sessionId) {
-      setValue("sessionId", sessions[0].id);
+      const initialSession = sessions.find((s) => s.id === initialSessionId);
+      setValue("sessionId", initialSession?.id ?? sessions[0].id);
     }
-  }, [sessions, sessionId, setValue]);
+  }, [sessions, sessionId, initialSessionId, setValue]);
 
   const onSubmit = async (data: JoinFormData) => {
     setError("");

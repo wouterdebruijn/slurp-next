@@ -44,7 +44,11 @@ export default function LeaderboardClient({
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-0 sm:p-6 xl:p-12">
       <div className="bg-transparent rounded-none p-4 sm:p-8 xl:p-12 max-w-[95vw] w-full min-h-screen sm:min-h-0">
-        <LeaderboardHeader sessionShortcode={session.shortcode} />
+        <LeaderboardHeader
+          sessionId={session.id}
+          sessionShortcode={session.shortcode}
+          isSessionActive={!!session.active}
+        />
 
         {currentPlayer && (
           <CurrentPlayerStats
