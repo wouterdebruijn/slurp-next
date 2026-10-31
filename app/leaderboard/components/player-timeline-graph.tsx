@@ -26,12 +26,12 @@ export default function PlayerTimelineGraph({
   const { data, isLoading, error } = useQuery({
     queryKey: ["player-entries", sessionId],
     queryFn: () => getPlayerEntries(sessionId),
-    refetchInterval: 10000,
+    refetchInterval: 5000,
   });
 
   if (isLoading) {
     return (
-      <div className="bg-grave/95 border-3 border-hex rounded-2xl p-6 mb-8">
+      <div className="bg-grave/95 border-3 border-hex rounded-2xl p-6 mb-8 lg:mb-0 lg:flex-1 lg:min-h-0">
         <h2 className="font-spooky text-3xl tracking-wide text-bone mb-4">
           Descent Into Madness
         </h2>
@@ -44,7 +44,7 @@ export default function PlayerTimelineGraph({
 
   if (error || !data || data.timelineData.length === 0) {
     return (
-      <div className="bg-grave/95 border-3 border-hex rounded-2xl p-6 mb-8">
+      <div className="bg-grave/95 border-3 border-hex rounded-2xl p-6 mb-8 lg:mb-0 lg:flex-1 lg:min-h-0">
         <h2 className="font-spooky text-3xl tracking-wide text-bone mb-4">
           Descent Into Madness
         </h2>
@@ -97,22 +97,22 @@ export default function PlayerTimelineGraph({
   });
 
   return (
-    <div className="relative bg-grave rounded-3xl p-6 pt-8 xl:p-10 xl:pt-12 mb-8 border-3 border-hex glow-hex">
+    <div className="relative bg-grave rounded-3xl p-6 pt-8 xl:p-10 xl:pt-12 short:p-6 short:pt-8 mb-8 lg:mb-0 lg:flex-1 lg:min-h-0 lg:flex lg:flex-col border-3 border-hex glow-hex">
       <SlimeDrips />
-      <div className="flex items-center mb-6 xl:mb-8">
-        <span className="text-4xl xl:text-7xl">🕸️</span>
-        <div className="inline-block ml-3 xl:ml-6">
-          <h2 className="font-spooky text-3xl xl:text-6xl tracking-wide text-bone">
+      <div className="flex items-center mb-6 xl:mb-8 short:mb-2">
+        <span className="text-4xl xl:text-7xl short:text-4xl">🕸️</span>
+        <div className="inline-block ml-3 xl:ml-6 short:ml-3">
+          <h2 className="font-spooky text-3xl xl:text-6xl short:text-3xl tracking-wide text-bone">
             Descent Into Madness
           </h2>
           {lastPlayer && (
-            <p className="text-sm xl:text-2xl text-slime text-glow-slime font-semibold">
+            <p className="text-sm xl:text-2xl short:text-base text-slime text-glow-slime font-semibold">
               {getRandomPraise(lastPlayer.username)}
             </p>
           )}
         </div>
       </div>
-      <div className="h-80 xl:h-150">
+      <div className="h-80 lg:h-auto lg:flex-1 lg:min-h-0">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
             data={formattedData}
@@ -134,6 +134,8 @@ export default function PlayerTimelineGraph({
               height={60}
             />
             <YAxis
+              // Headroom above the leader so their line doesn't hug the top edge
+              domain={[0, (dataMax: number) => Math.ceil(dataMax * 1.15) || 1]}
               stroke="#FFB454"
               strokeWidth={2}
               style={{ fontSize: "13px", fontWeight: "600" }}
@@ -165,6 +167,7 @@ export default function PlayerTimelineGraph({
                 activeDot={{ r: 6 }}
                 name={playerNames[playerId]}
                 connectNulls
+                animationDuration={600}
               />
             ))}
           </LineChart>
