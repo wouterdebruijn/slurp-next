@@ -1,3 +1,4 @@
+import MoonFace from "./moon-face";
 import Thunderstorm from "./thunderstorm";
 import {
   Bat,
@@ -75,6 +76,7 @@ export default function SpookyBackdrop() {
         className="absolute left-3 top-3 size-12 md:size-24 lg:left-[5%] lg:top-8 lg:size-52 xl:size-64 rounded-full shadow-[0_0_90px_24px_rgb(255_190_120_/_0.35)]"
       >
         <Moon className="size-full" />
+        <MoonFace />
       </div>
 
       <SpiderWeb className="absolute top-0 right-0 size-32 lg:size-80 opacity-30 -scale-x-100" />
