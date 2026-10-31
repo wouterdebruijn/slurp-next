@@ -34,6 +34,7 @@
   --font-bloody: var(--font-nosifer);
 }
 
+html,
 body {
   background: var(--background);
   color: var(--foreground);

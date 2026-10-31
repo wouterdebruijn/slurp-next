@@ -69,6 +69,13 @@ const RUMBLE: Keyframe[] = [
   { transform: "translate(0, 0)" },
 ];
 
+// Zoomed in slightly while shaking, so the sky's edges never come into view
+const SKY_RUMBLE: Keyframe[] = RUMBLE.map(({ transform }, i) =>
+  i === 0 || i === RUMBLE.length - 1
+    ? { transform }
+    : { transform: `${transform} scale(1.04)` },
+);
+
 const HALF_RUMBLE: Keyframe[] = RUMBLE.map(({ transform }) => ({
   transform: String(transform).replace(
     /-?\d+px/g,
@@ -99,7 +106,7 @@ export default function Thunderstorm() {
       // Sound travels slower than light: rumble after the flash. The sky
       // shakes hard, the page itself a little.
       const rumble = { duration: 1300, delay: 300, easing: "ease-out" };
-      document.querySelector(".spooky-scene")?.animate(RUMBLE, rumble);
+      document.querySelector(".spooky-sky")?.animate(SKY_RUMBLE, rumble);
       document.getElementById("page-content")?.animate(HALF_RUMBLE, rumble);
 
       timer = setTimeout(thunder, rand(14000, 40000));

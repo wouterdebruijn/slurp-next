@@ -59,7 +59,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${creepster.variable} ${nosifer.variable} antialiased `}
       >
-        <div className="relative min-h-screen bg-crypt">
+        {/* Clips the thunder shake, which would otherwise briefly push the page
+            past the screen edge and flash scrollbars */}
+        <div className="relative min-h-screen bg-crypt overflow-hidden">
           <SpookyBackdrop />
           <div id="page-content" className="relative z-10">
             <QueryProvider>{children}</QueryProvider>
