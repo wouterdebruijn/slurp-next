@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+/* Wide but short screens (720p/900p TVs and laptops) */
+@custom-variant short {
+  @media (min-width: 64rem) and (max-height: 56rem) {
+    @slot;
+  }
+}
+
 :root {
   --background: #0b0612;
   --foreground: #f5eddc;
