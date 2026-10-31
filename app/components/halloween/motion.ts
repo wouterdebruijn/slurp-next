@@ -1,6 +1,7 @@
 // Fired on window so decorations outside the leaderboard can react to the party
 export const SHOT_EVENT = "slurp:shot";
 export const THUNDER_EVENT = "slurp:thunder";
+export const WHEEL_EVENT = "slurp:wheel";
 
 export const rand = (min: number, max: number) =>
   min + Math.random() * (max - min);

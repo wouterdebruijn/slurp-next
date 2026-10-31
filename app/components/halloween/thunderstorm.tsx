@@ -2,7 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { THUNDER_EVENT, prefersReducedMotion, rand } from "./motion";
+import {
+  THUNDER_EVENT,
+  WHEEL_EVENT,
+  prefersReducedMotion,
+  rand,
+} from "./motion";
 
 interface Bolt {
   left: number;
@@ -112,8 +117,18 @@ export default function Thunderstorm() {
       timer = setTimeout(thunder, rand(14000, 40000));
     };
 
+    // The Wheel of Doom's verdict gets a strike of its own
+    const strikeNow = () => {
+      clearTimeout(timer);
+      thunder();
+    };
+
     timer = setTimeout(thunder, rand(4000, 10000));
-    return () => clearTimeout(timer);
+    window.addEventListener(WHEEL_EVENT, strikeNow);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener(WHEEL_EVENT, strikeNow);
+    };
   }, []);
 
   if (!strike) return null;

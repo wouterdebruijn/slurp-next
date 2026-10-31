@@ -253,6 +253,39 @@ body {
   }
 }
 
+@keyframes bulb-blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.2;
+  }
+}
+
+@keyframes victim-slam {
+  0% {
+    transform: scale(2.6) rotate(-6deg);
+    opacity: 0;
+  }
+  55% {
+    transform: scale(0.92) rotate(2deg);
+    opacity: 1;
+  }
+  70% {
+    transform: scale(1.06) rotate(-1deg);
+  }
+  80%, 90% {
+    transform: scale(1) translateX(-4px);
+  }
+  85%, 95% {
+    transform: scale(1) translateX(4px);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
 @keyframes sky-flash {
   0%, 100% {
     opacity: 0;
@@ -398,6 +431,14 @@ body {
 
 .animate-equalizer {
   animation: equalizer 0.9s ease-in-out infinite;
+}
+
+.animate-bulb-blink {
+  animation: bulb-blink 1s steps(1, end) infinite;
+}
+
+.animate-victim-slam {
+  animation: victim-slam 1.1s cubic-bezier(0.2, 0.8, 0.3, 1) both;
 }
 
 .animate-sky-flash {

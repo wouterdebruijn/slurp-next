@@ -1,5 +1,6 @@
 import { Pumpkin } from "@/app/components/halloween/spooky-art";
 import SessionQrCode from "./session-qr-code";
+import WheelCountdown from "../wheel/wheel-countdown";
 
 interface LeaderboardHeaderProps {
   sessionId: string;
@@ -23,6 +24,7 @@ export default function LeaderboardHeader({
           <p className="text-lg xl:text-2xl text-slime text-glow-slime font-bold">
             {sessionShortcode}
           </p>
+          {isSessionActive && <WheelCountdown />}
         </div>
       </div>
 

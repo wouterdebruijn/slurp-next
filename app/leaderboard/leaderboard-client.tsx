@@ -13,6 +13,7 @@ import LoadingState from "./components/loading-state";
 import ErrorState from "./components/error-state";
 import PlayerTimelineGraph from "./components/player-timeline-graph";
 import NowPlaying from "./components/now-playing";
+import WheelOfDoom from "./wheel/wheel-of-doom";
 
 interface LeaderboardClientProps {
   sessionId: string;
@@ -117,6 +118,12 @@ export default function LeaderboardClient({
           <LeaderboardActions onRefresh={() => refetch()} />
         </div>
       </div>
+
+      <WheelOfDoom
+        sessionId={session.id}
+        players={players}
+        enabled={!!session.active}
+      />
     </div>
   );
 }
