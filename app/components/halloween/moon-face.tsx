@@ -3,9 +3,13 @@
 import { useEffect, useRef } from "react";
 import { play, prefersReducedMotion, rand, wait } from "./motion";
 
-// Drop the face image here; until it exists, nothing is shown
+// Until the image exists, nothing is shown.
+// public/moon-face.png: cropped, greyscale "Charlie Kirk by Gage Skidmore"
+// (https://commons.wikimedia.org/wiki/File:Charlie_Kirk_by_Gage_Skidmore.jpg),
+// CC BY-SA 3.0 (https://creativecommons.org/licenses/by-sa/3.0/).
 const FACE_SRC = "/moon-face.png";
-const PEAK_OPACITY = 0.12;
+// Barely-there: you only notice it if you're looking at the moon
+const PEAK_OPACITY = 0.07;
 
 /**
  * Every minute or two a face faintly surfaces in the moon, lingers, and sinks
