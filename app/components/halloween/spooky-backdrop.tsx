@@ -34,7 +34,7 @@ export default function SpookyBackdrop() {
     >
       <div className="spooky-stars animate-twinkle absolute inset-0" />
 
-      <div className="absolute left-3 top-3 size-12 md:size-24 lg:left-[5%] lg:top-8 lg:size-52 xl:size-64 rounded-full shadow-[0_0_90px_24px_rgb(255_190_120_/_0.35)]">
+      <div id="moon-home" className="absolute left-3 top-3 size-12 md:size-24 lg:left-[5%] lg:top-8 lg:size-52 xl:size-64 rounded-full shadow-[0_0_90px_24px_rgb(255_190_120_/_0.35)]">
         <Moon className="size-full" />
       </div>
 

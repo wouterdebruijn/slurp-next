@@ -134,6 +134,14 @@ export function Moon({ className }: ArtProps) {
         <circle cx="52" cy="124" r="11" />
         <circle cx="98" cy="154" r="14" />
       </g>
+    </svg>
+  );
+}
+
+/** Drawn in the moon's 200x200 box so it sits on the moon at rest. */
+export function Witch({ className }: ArtProps) {
+  return (
+    <svg viewBox="0 0 200 200" className={className} aria-hidden="true">
       {/* Witch on a broomstick */}
       <g transform="translate(36 72) scale(1.08) rotate(-7 60 40)" fill="#05020a">
         <path
