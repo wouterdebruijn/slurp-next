@@ -12,7 +12,7 @@ const FACE_SRC = "/moon-face.png";
 const PEAK_OPACITY = 0.15;
 
 /**
- * Every minute or two a face faintly surfaces in the moon, lingers, and sinks
+ * Every half minute to a minute a face faintly surfaces in the moon, lingers, and sinks
  * back. It is blended into the moon's surface and only ever barely visible.
  */
 export default function MoonFace() {
@@ -33,7 +33,7 @@ export default function MoonFace() {
         el.style.display = "none";
         return;
       }
-      await wait(rand(20000, 45000));
+      await wait(rand(10000, 25000));
       while (alive) {
         const peak = { opacity: PEAK_OPACITY };
         await play(el, [{ opacity: 0 }, peak], {
@@ -41,12 +41,12 @@ export default function MoonFace() {
           easing: "ease-in-out",
         });
         if (!alive) break;
-        await wait(rand(1500, 3500));
+        await wait(rand(4000, 7000));
         await play(el, [peak, { opacity: 0 }], {
           duration: rand(3000, 5000),
           easing: "ease-in-out",
         });
-        await wait(rand(45000, 120000));
+        await wait(rand(25000, 60000));
       }
     };
     loop();
