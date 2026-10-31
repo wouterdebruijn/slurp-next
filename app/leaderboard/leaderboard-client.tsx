@@ -62,8 +62,8 @@ export default function LeaderboardClient({
           {/* Landscape Layout: Side-by-side for TV/wide screens */}
           <div className="flex flex-col lg:flex-row lg:gap-6 lg:flex-1 lg:min-h-0">
             {/* Leaderboard Section: scrolls inside its column, fading out at the bottom */}
-            <div className="lg:flex-1 xl:flex-[1] lg:min-w-0 lg:overflow-y-auto lg:p-2 lg:-m-2 [scrollbar-width:none] lg:[mask-image:linear-gradient(to_bottom,black_calc(100%-3rem),transparent)]">
-              <div className="space-y-3 mb-8 lg:mb-0 lg:pb-12">
+            <div className="lg:flex-1 xl:flex-[1] lg:min-w-0 lg:overflow-y-auto lg:p-6 lg:-m-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:[mask-image:linear-gradient(to_bottom,black_calc(100%-4rem),transparent)]">
+              <div className="space-y-3 mb-8 lg:mb-0 lg:pb-10">
                 {players.length === 0 ? (
                   <EmptyLeaderboard />
                 ) : (
@@ -92,7 +92,10 @@ export default function LeaderboardClient({
           </div>
         </div>
 
-        <LeaderboardActions onRefresh={() => refetch()} />
+        {/* The board auto-refreshes; on wide screens the buttons would only add a page scrollbar */}
+        <div className="lg:hidden">
+          <LeaderboardActions onRefresh={() => refetch()} />
+        </div>
       </div>
     </div>
   );

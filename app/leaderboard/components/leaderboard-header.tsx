@@ -13,14 +13,14 @@ export default function LeaderboardHeader({
   isSessionActive,
 }: LeaderboardHeaderProps) {
   return (
-    <div className="mb-8 xl:mb-12 lg:grid lg:grid-cols-[1fr_auto_1fr] lg:items-center lg:gap-6">
+    <div className="mb-8 xl:mb-10 lg:grid lg:grid-cols-[1fr_auto_1fr] lg:items-center lg:gap-6">
       <div className="flex items-center justify-center gap-4 xl:gap-6 mb-6 xl:mb-8 lg:mb-0 lg:col-start-2">
-        <Pumpkin className="size-12 xl:size-28" />
+        <Pumpkin className="size-12 xl:size-22" />
         <div className="flex flex-col items-start">
-          <h1 className="font-spooky text-4xl xl:text-8xl tracking-wide text-pumpkin text-glow-pumpkin animate-flicker">
+          <h1 className="font-spooky text-4xl xl:text-7xl tracking-wide text-pumpkin text-glow-pumpkin animate-flicker">
             Leaderboo!
           </h1>
-          <p className="text-lg xl:text-3xl text-slime text-glow-slime font-bold">
+          <p className="text-lg xl:text-2xl text-slime text-glow-slime font-bold">
             {sessionShortcode}
           </p>
         </div>

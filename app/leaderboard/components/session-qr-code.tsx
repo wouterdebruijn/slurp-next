@@ -26,8 +26,8 @@ export default function SessionQrCode({
   }
 
   return (
-    <div className="hidden lg:flex lg:justify-self-end flex-col items-center gap-1 bg-bone rounded-t-[3rem] xl:rounded-t-[4.5rem] rounded-b-lg border-3 border-mist glow-hex px-3 pb-2 pt-2 xl:pt-3 animate-slide-in">
-      <p className="font-spooky text-lg xl:text-3xl tracking-widest text-crypt/70 leading-none">
+    <div className="hidden lg:flex lg:justify-self-end flex-col items-center gap-1 bg-bone rounded-t-[3rem] xl:rounded-t-[4rem] rounded-b-lg border-3 border-mist glow-hex px-3 pb-2 pt-2 xl:pt-3 animate-slide-in">
+      <p className="font-spooky text-lg xl:text-2xl tracking-widest text-crypt/70 leading-none">
         R.I.P.
       </p>
       {/* Stays dark on light: phone cameras often fail to read inverted codes */}
@@ -37,9 +37,9 @@ export default function SessionQrCode({
         level="M"
         bgColor="#f5eddc"
         fgColor="#0b0612"
-        className="size-28 xl:size-40 2xl:size-44"
+        className="size-28 xl:size-34 2xl:size-38"
       />
-      <p className="font-spooky text-base xl:text-2xl leading-tight tracking-wide text-crypt whitespace-nowrap">
+      <p className="font-spooky text-base xl:text-xl leading-tight tracking-wide text-crypt whitespace-nowrap">
         Scan if you dare! 🎃
       </p>
     </div>
