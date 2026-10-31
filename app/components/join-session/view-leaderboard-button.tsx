@@ -27,9 +27,9 @@ export function ViewLeaderboardButton({
       type="button"
       onClick={() => router.push(`/leaderboard?session=${selectedSession.id}`)}
       disabled={isLoading || !sessions || sessions.length === 0}
-      className="w-full py-3 bg-white border-3 border-yellow-400 text-yellow-600 text-lg font-bold rounded-2xl hover:bg-yellow-50 active:scale-95 transform transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg cursor-pointer"
+      className="w-full py-3 bg-crypt/60 border-3 border-hex text-bone text-lg font-bold rounded-2xl hover:bg-hex/25 active:scale-95 transform transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg cursor-pointer"
     >
-      👀 View Leaderboard Only
+      👻 Just Haunt the Leaderboard
     </button>
   );
 }

@@ -30,21 +30,21 @@ export function SessionSelector({
     <div>
       <label
         htmlFor="sessionId"
-        className="block text-sm font-bold text-gray-700 mb-2"
+        className="block font-spooky text-xl tracking-wide text-ember mb-2"
       >
-        Select Session 🎯
+        Choose Your Séance 🔮
       </label>
       {isLoading ? (
-        <div className="px-4 py-3 border-3 border-yellow-300 rounded-2xl bg-yellow-50 text-gray-500 text-center">
-          Loading sessions... 🔄
+        <div className="px-4 py-3 border-3 border-tomb rounded-2xl bg-crypt text-mist text-center">
+          Summoning sessions... 🕯️
         </div>
       ) : sessions && sessions.length > 0 ? (
         <select
           id="sessionId"
           {...register("sessionId")}
-          className="w-full px-4 py-3 border-3 border-yellow-300 rounded-2xl focus:outline-none focus:ring-4 focus:ring-yellow-400 focus:border-yellow-400 transition-all text-gray-800 font-medium bg-white"
+          className="w-full px-4 py-3 border-3 border-tomb rounded-2xl focus:outline-none focus:ring-4 focus:ring-pumpkin/50 focus:border-pumpkin transition-all text-bone font-medium bg-crypt"
         >
-          <option value="">Choose a session...</option>
+          <option value="">Choose a séance...</option>
           {sessions.map((session) => (
             <option key={session.id} value={session.id}>
               {session.shortcode}
@@ -52,12 +52,12 @@ export function SessionSelector({
           ))}
         </select>
       ) : (
-        <div className="px-4 py-3 border-3 border-red-300 rounded-2xl bg-red-50 text-red-600 text-center">
-          No active sessions available 😢
+        <div className="px-4 py-3 border-3 border-blood rounded-2xl bg-blood/20 text-red-200 text-center">
+          No active sessions... the spirits are sleeping 💤
         </div>
       )}
       {errors.sessionId && (
-        <p className="text-red-500 text-sm mt-1">{errors.sessionId.message}</p>
+        <p className="text-red-400 text-sm mt-1">{errors.sessionId.message}</p>
       )}
     </div>
   );

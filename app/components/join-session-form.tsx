@@ -16,6 +16,7 @@ import { ErrorDisplay } from "./join-session/error-display";
 import { SubmitButton } from "./join-session/submit-button";
 import { ViewLeaderboardButton } from "./join-session/view-leaderboard-button";
 import { FormFooter } from "./join-session/form-footer";
+import { SlimeDrips } from "./halloween/spooky-art";
 
 const joinSchema = z.object({
   username: z
@@ -108,7 +109,8 @@ export function JoinSessionForm({
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-0 sm:p-6">
-      <div className="bg-transparent sm:bg-white rounded-none sm:rounded-3xl sm:shadow-2xl p-6 sm:p-8 max-w-md w-full min-h-screen sm:min-h-0">
+      <div className="relative bg-crypt/60 sm:bg-grave/95 sm:border-3 sm:border-hex sm:glow-hex rounded-none sm:rounded-3xl p-6 sm:p-8 max-w-md w-full min-h-screen sm:min-h-0">
+        <SlimeDrips className="hidden sm:block" />
         <FormHeader />
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">

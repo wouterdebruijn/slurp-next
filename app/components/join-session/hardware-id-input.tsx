@@ -18,19 +18,19 @@ export function HardwareIdInput({ register, errors }: HardwareIdInputProps) {
     <div>
       <label
         htmlFor="hardwareId"
-        className="block text-sm font-bold text-gray-700 mb-2"
+        className="block font-spooky text-xl tracking-wide text-ember mb-2"
       >
-        Glass ID 🥃
+        Cursed Glass ID 🧪
       </label>
       <input
         id="hardwareId"
         type="text"
         placeholder="Enter your glass ID"
         {...register("hardwareId")}
-        className="w-full px-4 py-3 border-3 border-yellow-300 rounded-2xl focus:outline-none focus:ring-4 focus:ring-yellow-400 focus:border-yellow-400 transition-all text-gray-800 font-medium bg-white"
+        className="w-full px-4 py-3 border-3 border-tomb rounded-2xl focus:outline-none focus:ring-4 focus:ring-pumpkin/50 focus:border-pumpkin transition-all text-bone placeholder:text-mist/60 font-medium bg-crypt"
       />
       {errors.hardwareId && (
-        <p className="text-red-500 text-sm mt-1">{errors.hardwareId.message}</p>
+        <p className="text-red-400 text-sm mt-1">{errors.hardwareId.message}</p>
       )}
     </div>
   );

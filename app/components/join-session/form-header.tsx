@@ -1,12 +1,18 @@
+import { Pumpkin } from "../halloween/spooky-art";
+
 export function FormHeader() {
   return (
     <div className="text-center mb-8">
-      <div className="text-6xl mb-4">🍻</div>
-      <h1 className="text-4xl font-bold text-gray-800 mb-2">
-        Welcome to <span className="text-yellow-500">Slurp!</span>
+      <Pumpkin className="size-24 mx-auto mb-4" />
+      <h1 className="font-spooky text-5xl tracking-wide text-bone mb-3">
+        Welcome to{" "}
+        <span className="font-bloody text-4xl text-blood block mt-3 text-glow-pumpkin">
+          Slurp!
+        </span>
       </h1>
-      <p className="text-gray-600">
-        Join the drinking session and let&apos;s get this party started!
+      <p className="text-mist">
+        Join the séance and raise a glass&hellip;{" "}
+        <span className="whitespace-nowrap">if you dare! 🦇</span>
       </p>
     </div>
   );

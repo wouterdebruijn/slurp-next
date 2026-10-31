@@ -14,7 +14,18 @@ export function SuccessScreen({
     // Trigger confetti animation
     const duration = 2000;
     const animationEnd = Date.now() + duration;
-    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+    const scalar = 3;
+    const shapes = ["🎃", "👻", "🦇", "💀", "🕷️"].map((text) =>
+      confetti.shapeFromText({ text, scalar }),
+    );
+    const defaults = {
+      startVelocity: 30,
+      spread: 360,
+      ticks: 60,
+      zIndex: 50,
+      shapes,
+      scalar,
+    };
 
     const randomInRange = (min: number, max: number) => {
       return Math.random() * (max - min) + min;
@@ -28,7 +39,7 @@ export function SuccessScreen({
         return;
       }
 
-      const particleCount = 50 * (timeLeft / duration);
+      const particleCount = 12 * (timeLeft / duration);
 
       confetti({
         ...defaults,
@@ -47,20 +58,20 @@ export function SuccessScreen({
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-0 sm:p-6">
-      <div className="bg-transparent sm:bg-white rounded-none sm:rounded-3xl sm:shadow-2xl p-6 sm:p-8 max-w-md w-full min-h-screen sm:min-h-0 text-center transform animate-bounce-in">
-        <div className="text-6xl mb-4">🎉</div>
-        <h2 className="text-3xl font-bold text-gray-800 mb-2">
-          You&apos;re in!
+      <div className="bg-crypt/60 sm:bg-grave/95 sm:border-3 sm:border-hex sm:glow-hex rounded-none sm:rounded-3xl p-6 sm:p-8 max-w-md w-full min-h-screen sm:min-h-0 text-center transform animate-bounce-in">
+        <div className="text-6xl mb-4">🧟</div>
+        <h2 className="font-spooky text-5xl tracking-wide text-slime text-glow-slime mb-2">
+          There&apos;s no escape now!
         </h2>
-        <p className="text-gray-600 mb-6">Redirecting to the leaderboard...</p>
-        <div className="bg-yellow-100 rounded-2xl p-6 border-4 border-yellow-300">
-          <p className="text-sm text-gray-500 mb-2">Your drinking session</p>
-          <p className="text-2xl font-bold text-yellow-600">
+        <p className="text-mist mb-6">Dragging you to the leaderboard...</p>
+        <div className="bg-crypt rounded-2xl p-6 border-4 border-pumpkin">
+          <p className="text-sm text-mist mb-2">Your séance</p>
+          <p className="text-2xl font-bold text-pumpkin">
             {selectedSessionShortcode}
           </p>
         </div>
         <div className="mt-6">
-          <div className="animate-spin text-4xl">⚡</div>
+          <div className="animate-spin text-4xl">🔮</div>
         </div>
       </div>
     </div>

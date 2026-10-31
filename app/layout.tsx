@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Creepster, Geist, Geist_Mono, Nosifer } from "next/font/google";
+import SpookyBackdrop from "./components/halloween/spooky-backdrop";
 import { QueryProvider } from "./providers/query-provider";
 import "./globals.css";
 
@@ -13,9 +14,21 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const creepster = Creepster({
+  variable: "--font-creepster",
+  weight: "400",
+  subsets: ["latin"],
+});
+
+const nosifer = Nosifer({
+  variable: "--font-nosifer",
+  weight: "400",
+  subsets: ["latin"],
+});
+
 export const metadata: Metadata = {
-  title: "Slurp - Drink Together",
-  description: "Join drinking sessions and have fun with friends",
+  title: "Slurp - Drink If You Dare 🎃",
+  description: "Join the séance and drink with your fellow ghouls",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -29,7 +42,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  colorScheme: "light",
+  colorScheme: "dark",
+  themeColor: "#0b0612",
 };
 
 export default function RootLayout({
@@ -40,10 +54,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased `}
+        className={`${geistSans.variable} ${geistMono.variable} ${creepster.variable} ${nosifer.variable} antialiased `}
       >
-        <div className="min-h-screen bg-linear-to-br from-yellow-300 via-yellow-400 to-orange-400">
-          <QueryProvider>{children}</QueryProvider>
+        <div className="relative min-h-screen bg-crypt">
+          <SpookyBackdrop />
+          <div className="relative z-10">
+            <QueryProvider>{children}</QueryProvider>
+          </div>
         </div>
       </body>
     </html>

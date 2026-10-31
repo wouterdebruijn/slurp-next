@@ -4,8 +4,8 @@
   "description": "Join drinking sessions and have fun with friends",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#FBBF24",
-  "theme_color": "#FBBF24",
+  "background_color": "#0b0612",
+  "theme_color": "#0b0612",
   "orientation": "portrait",
   "icons": [
     {

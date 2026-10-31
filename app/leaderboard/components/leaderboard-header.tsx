@@ -1,3 +1,4 @@
+import { Pumpkin } from "@/app/components/halloween/spooky-art";
 import SessionQrCode from "./session-qr-code";
 
 interface LeaderboardHeaderProps {
@@ -14,12 +15,12 @@ export default function LeaderboardHeader({
   return (
     <div className="mb-8 xl:mb-12 lg:grid lg:grid-cols-[1fr_auto_1fr] lg:items-center lg:gap-6">
       <div className="flex items-center justify-center gap-4 xl:gap-6 mb-6 xl:mb-8 lg:mb-0 lg:col-start-2">
-        <div className="text-5xl xl:text-8xl">🏆</div>
+        <Pumpkin className="size-12 xl:size-28" />
         <div className="flex flex-col items-start">
-          <h1 className="text-3xl xl:text-6xl font-bold text-gray-800">
-            Leaderboard
+          <h1 className="font-spooky text-4xl xl:text-8xl tracking-wide text-pumpkin text-glow-pumpkin animate-flicker">
+            Leaderboo!
           </h1>
-          <p className="text-lg xl:text-3xl text-yellow-600 font-bold">
+          <p className="text-lg xl:text-3xl text-slime text-glow-slime font-bold">
             {sessionShortcode}
           </p>
         </div>

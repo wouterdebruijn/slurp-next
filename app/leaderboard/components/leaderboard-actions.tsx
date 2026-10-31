@@ -17,9 +17,9 @@ export default function LeaderboardActions({
       <div className="text-center">
         <button
           onClick={onRefresh}
-          className="px-6 py-3 bg-yellow-400 text-white font-bold rounded-2xl hover:bg-yellow-500 active:scale-95 transition-all shadow-lg cursor-pointer"
+          className="px-6 py-3 bg-hex text-bone font-bold rounded-2xl hover:bg-hex/80 active:scale-95 transition-all glow-hex cursor-pointer"
         >
-          🔄 Refresh Leaderboard
+          🔮 Refresh Leaderboard
         </button>
       </div>
 
@@ -27,9 +27,9 @@ export default function LeaderboardActions({
       <div className="mt-4 text-center">
         <button
           onClick={() => router.push("/")}
-          className="text-gray-600 font-medium hover:text-gray-800 hover:underline cursor-pointer"
+          className="text-mist font-medium hover:text-bone hover:underline cursor-pointer"
         >
-          ← Back to Home
+          ⚰️ Back to the Crypt
         </button>
       </div>
     </>

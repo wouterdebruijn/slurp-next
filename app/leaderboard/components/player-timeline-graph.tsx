@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { getPlayerEntries } from "@/app/actions/player-entries-actions";
 import { hashStringToColor } from "@/utils/colorUtils";
+import { SlimeDrips } from "@/app/components/halloween/spooky-art";
 import {
   LineChart,
   Line,
@@ -30,12 +31,12 @@ export default function PlayerTimelineGraph({
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-2xl p-6 mb-8">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">
-          Shot Progress Over Time
+      <div className="bg-grave/95 border-3 border-hex rounded-2xl p-6 mb-8">
+        <h2 className="font-spooky text-3xl tracking-wide text-bone mb-4">
+          Descent Into Madness
         </h2>
         <div className="flex items-center justify-center h-64">
-          <div className="text-4xl animate-spin">📊</div>
+          <div className="text-4xl animate-spin">🔮</div>
         </div>
       </div>
     );
@@ -43,12 +44,12 @@ export default function PlayerTimelineGraph({
 
   if (error || !data || data.timelineData.length === 0) {
     return (
-      <div className="bg-white rounded-2xl p-6 mb-8">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">
-          Shot Progress Over Time
+      <div className="bg-grave/95 border-3 border-hex rounded-2xl p-6 mb-8">
+        <h2 className="font-spooky text-3xl tracking-wide text-bone mb-4">
+          Descent Into Madness
         </h2>
-        <div className="flex items-center justify-center h-64 text-gray-400">
-          <p>No data available yet</p>
+        <div className="flex items-center justify-center h-64 text-mist">
+          <p>No souls claimed yet...</p>
         </div>
       </div>
     );
@@ -61,14 +62,14 @@ export default function PlayerTimelineGraph({
 
   // Fun praising sentences
   const praisePhrases = [
-    "is on fire! 🔥",
-    "is crushing it! 💪",
-    "is a legend! ⭐",
-    "is unstoppable! 🚀",
-    "is the MVP! 🏆",
-    "is showing everyone how it's done! 🎯",
-    "just leveled up! 🎮",
-    "is in beast mode! 🦁",
+    "has risen from the grave! 🧟",
+    "is out for blood! 🧛",
+    "is howling at the moon! 🐺",
+    "is possessed! 😈",
+    "is scaring the living! 👻",
+    "just sold their soul! 🔥",
+    "has been cursed! 🔮",
+    "is brewing up trouble! 🧪",
   ];
 
   const getRandomPraise = (name: string) => {
@@ -96,15 +97,16 @@ export default function PlayerTimelineGraph({
   });
 
   return (
-    <div className="bg-yellow-50 rounded-3xl p-6 xl:p-10 mb-8 border-3 border-yellow-300 shadow-xl">
+    <div className="relative bg-grave rounded-3xl p-6 pt-8 xl:p-10 xl:pt-12 mb-8 border-3 border-hex glow-hex">
+      <SlimeDrips />
       <div className="flex items-center mb-6 xl:mb-8">
-        <span className="text-4xl xl:text-7xl">📈</span>
+        <span className="text-4xl xl:text-7xl">🕸️</span>
         <div className="inline-block ml-3 xl:ml-6">
-          <h2 className="text-2xl xl:text-5xl font-bold text-gray-800">
-            Shot Progress Over Time
+          <h2 className="font-spooky text-3xl xl:text-6xl tracking-wide text-bone">
+            Descent Into Madness
           </h2>
           {lastPlayer && (
-            <p className="text-sm xl:text-2xl text-yellow-600 font-semibold">
+            <p className="text-sm xl:text-2xl text-slime text-glow-slime font-semibold">
               {getRandomPraise(lastPlayer.username)}
             </p>
           )}
@@ -118,35 +120,35 @@ export default function PlayerTimelineGraph({
           >
             <CartesianGrid
               strokeDasharray="5 5"
-              stroke="#FDE68A"
+              stroke="#5b3f7d"
               opacity={0.6}
             />
             <XAxis
               dataKey="time"
-              stroke="#CA8A04"
+              stroke="#FFB454"
               strokeWidth={2}
               style={{ fontSize: "11px", fontWeight: "600" }}
-              tick={{ fill: "#CA8A04" }}
+              tick={{ fill: "#FFB454" }}
               angle={-45}
               textAnchor="end"
               height={60}
             />
             <YAxis
-              stroke="#CA8A04"
+              stroke="#FFB454"
               strokeWidth={2}
               style={{ fontSize: "13px", fontWeight: "600" }}
-              tick={{ fill: "#CA8A04" }}
+              tick={{ fill: "#FFB454" }}
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: "#FFFBEB",
-                border: "3px solid #FBBF24",
+                backgroundColor: "#1A1026",
+                border: "3px solid #8B3DFF",
                 borderRadius: "16px",
                 fontSize: "13px",
                 fontWeight: "600",
-                boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                boxShadow: "0 4px 18px rgba(0, 0, 0, 0.6)",
               }}
-              labelStyle={{ color: "#CA8A04", fontWeight: "700" }}
+              labelStyle={{ color: "#FFB454", fontWeight: "700" }}
             />
             <Legend
               wrapperStyle={{ fontSize: "10px", fontWeight: "600" }}

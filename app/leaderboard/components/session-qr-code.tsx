@@ -26,15 +26,21 @@ export default function SessionQrCode({
   }
 
   return (
-    <div className="hidden lg:flex lg:justify-self-end flex-col items-center gap-1 xl:gap-2 bg-white rounded-2xl xl:rounded-3xl border-3 border-yellow-300 shadow-lg p-3 animate-slide-in">
+    <div className="hidden lg:flex lg:justify-self-end flex-col items-center gap-1 bg-bone rounded-t-[3rem] xl:rounded-t-[4.5rem] rounded-b-lg border-3 border-mist glow-hex px-3 pb-2 pt-2 xl:pt-3 animate-slide-in">
+      <p className="font-spooky text-lg xl:text-3xl tracking-widest text-crypt/70 leading-none">
+        R.I.P.
+      </p>
+      {/* Stays dark on light: phone cameras often fail to read inverted codes */}
       <QRCodeSVG
         value={`${origin}/?session=${sessionId}`}
         title={`Scan to join session ${sessionShortcode}`}
         level="M"
-        className="size-28 xl:size-40 2xl:size-48"
+        bgColor="#f5eddc"
+        fgColor="#0b0612"
+        className="size-28 xl:size-40 2xl:size-44"
       />
-      <p className="text-sm xl:text-xl font-bold text-gray-800 whitespace-nowrap">
-        Scan to join! 🍻
+      <p className="font-spooky text-base xl:text-2xl leading-tight tracking-wide text-crypt whitespace-nowrap">
+        Scan if you dare! 🎃
       </p>
     </div>
   );

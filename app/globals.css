@@ -1,8 +1,21 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0b0612;
+  --foreground: #f5eddc;
+}
+
+@theme {
+  --color-crypt: #0b0612;
+  --color-grave: #1a1026;
+  --color-tomb: #3a2553;
+  --color-hex: #8b3dff;
+  --color-pumpkin: #ff7a18;
+  --color-ember: #ffb454;
+  --color-slime: #9dff3c;
+  --color-blood: #d3122a;
+  --color-bone: #f5eddc;
+  --color-mist: #b9adc9;
 }
 
 @theme inline {
@@ -10,13 +23,8 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-spooky: var(--font-creepster);
+  --font-bloody: var(--font-nosifer);
 }
 
 body {
@@ -76,4 +84,223 @@ body {
 
 .animate-shake {
   animation: shake 0.5s ease-in-out;
+}
+
+/* Halloween scene. Only transform and opacity animate, so a TV can run it for hours. */
+@keyframes bat-fly {
+  0% {
+    transform: translate3d(-12vw, 0, 0);
+  }
+  25% {
+    transform: translate3d(20vw, -6vh, 0);
+  }
+  50% {
+    transform: translate3d(50vw, 5vh, 0);
+  }
+  75% {
+    transform: translate3d(80vw, -8vh, 0);
+  }
+  100% {
+    transform: translate3d(112vw, 0, 0);
+  }
+}
+
+@keyframes bat-flap {
+  0%, 100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(0.45);
+  }
+}
+
+@keyframes ghost-drift {
+  from {
+    transform: translate3d(-15vw, 0, 0);
+  }
+  to {
+    transform: translate3d(115vw, 0, 0);
+  }
+}
+
+@keyframes ghost-float {
+  0%, 100% {
+    transform: translateY(0) rotate(-4deg);
+  }
+  50% {
+    transform: translateY(-28px) rotate(4deg);
+  }
+}
+
+@keyframes spider-dangle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(14vh);
+  }
+}
+
+@keyframes fog-drift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes twinkle {
+  0%, 100% {
+    opacity: 0.9;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* One soft double flash per cycle, kept dim so it never strobes */
+@keyframes lightning {
+  0%, 91%, 93%, 95%, 100% {
+    opacity: 0;
+  }
+  92% {
+    opacity: 0.22;
+  }
+  94% {
+    opacity: 0.12;
+  }
+}
+
+@keyframes flicker {
+  0%, 100% {
+    opacity: 1;
+  }
+  41% {
+    opacity: 1;
+  }
+  43% {
+    opacity: 0.72;
+  }
+  45% {
+    opacity: 1;
+  }
+  78% {
+    opacity: 0.85;
+  }
+  82% {
+    opacity: 1;
+  }
+}
+
+@keyframes drip-fall {
+  0%, 55% {
+    opacity: 0;
+    transform: translateY(0) scale(0.4);
+  }
+  62% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  95% {
+    opacity: 1;
+    transform: translateY(70vh) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(75vh) scale(1);
+  }
+}
+
+.animate-bat-fly {
+  animation: bat-fly linear infinite;
+}
+
+.animate-bat-flap {
+  animation: bat-flap 0.35s ease-in-out infinite;
+}
+
+.animate-ghost-drift {
+  animation: ghost-drift linear infinite;
+}
+
+.animate-ghost-float {
+  animation: ghost-float 6s ease-in-out infinite;
+}
+
+.animate-spider-dangle {
+  animation: spider-dangle 11s ease-in-out infinite;
+}
+
+.animate-fog-drift {
+  animation: fog-drift linear infinite;
+}
+
+.animate-twinkle {
+  animation: twinkle 5s ease-in-out infinite;
+}
+
+.animate-lightning {
+  animation: lightning 27s linear infinite;
+}
+
+.animate-flicker {
+  animation: flicker 7s linear infinite;
+}
+
+.animate-drip-fall {
+  animation: drip-fall 9s ease-in infinite;
+}
+
+.spooky-sky {
+  background:
+    radial-gradient(ellipse 90% 60% at 18% 0%, #3b1763 0%, transparent 70%),
+    radial-gradient(ellipse 70% 50% at 90% 10%, #4a1030 0%, transparent 70%),
+    linear-gradient(to bottom, #150a24 0%, #0b0612 70%);
+}
+
+.spooky-stars {
+  background-image:
+    radial-gradient(1.5px 1.5px at 7% 14%, #f5eddc, transparent),
+    radial-gradient(1px 1px at 16% 42%, #f5eddc, transparent),
+    radial-gradient(2px 2px at 27% 22%, #ffe9c4, transparent),
+    radial-gradient(1px 1px at 38% 9%, #f5eddc, transparent),
+    radial-gradient(1.5px 1.5px at 46% 36%, #d9c8ff, transparent),
+    radial-gradient(1px 1px at 58% 17%, #f5eddc, transparent),
+    radial-gradient(2px 2px at 66% 44%, #f5eddc, transparent),
+    radial-gradient(1px 1px at 74% 8%, #ffe9c4, transparent),
+    radial-gradient(1.5px 1.5px at 83% 29%, #f5eddc, transparent),
+    radial-gradient(1px 1px at 93% 51%, #d9c8ff, transparent);
+}
+
+.spooky-fog {
+  background-image:
+    radial-gradient(ellipse 22% 60% at 23% 80%, rgb(185 173 201 / 0.2), transparent),
+    radial-gradient(ellipse 14% 45% at 48% 90%, rgb(185 173 201 / 0.16), transparent),
+    radial-gradient(ellipse 20% 55% at 76% 85%, rgb(185 173 201 / 0.2), transparent);
+  background-size: 50% 100%;
+}
+
+.text-glow-pumpkin {
+  text-shadow:
+    0 0 12px rgb(255 122 24 / 0.75),
+    0 0 36px rgb(211 18 42 / 0.55);
+}
+
+.text-glow-slime {
+  text-shadow: 0 0 14px rgb(157 255 60 / 0.6);
+}
+
+@utility glow-hex {
+  box-shadow:
+    0 0 28px rgb(139 61 255 / 0.35),
+    0 12px 32px rgb(0 0 0 / 0.6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spooky-scene *,
+  .animate-flicker,
+  .animate-ghost-float {
+    animation: none !important;
+  }
 }
