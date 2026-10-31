@@ -12,6 +12,7 @@ import LeaderboardActions from "./components/leaderboard-actions";
 import LoadingState from "./components/loading-state";
 import ErrorState from "./components/error-state";
 import PlayerTimelineGraph from "./components/player-timeline-graph";
+import NowPlaying from "./components/now-playing";
 
 interface LeaderboardClientProps {
   sessionId: string;
@@ -101,7 +102,9 @@ export default function LeaderboardClient({
             </div>
 
             {/* Graph Section */}
-            <div className="lg:flex-1 xl:flex-[2] lg:min-w-0 lg:flex lg:flex-col">
+            <div className="relative lg:flex-1 xl:flex-[2] lg:min-w-0 lg:flex lg:flex-col">
+              {/* Above the graph on phones, tucked into its top-right corner on wide screens */}
+              <NowPlaying className="mb-4 lg:mb-0 lg:absolute lg:z-10 lg:top-7 lg:right-6 xl:top-10 xl:right-10 short:top-6 short:right-6 lg:w-[min(24rem,45%)] xl:w-[min(25rem,35%)] short:w-[min(24rem,45%)]" />
               <PlayerTimelineGraph
                 sessionId={sessionId}
                 topThreePlayers={topThreePlayers}
