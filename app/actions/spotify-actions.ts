@@ -1,6 +1,10 @@
 "use server";
 
-import { getSpotifyState, refreshSpotify } from "@/utils/homeAssistant";
+import {
+  getJamUrl,
+  getSpotifyState,
+  refreshSpotify,
+} from "@/utils/homeAssistant";
 
 export interface NowPlaying {
   playing: boolean;
@@ -13,11 +17,16 @@ export interface NowPlaying {
   /** Seconds into the track at the moment this was returned */
   position: number;
   device?: string;
+  /** Invite link to the group's Spotify Jam, when one is set in Home Assistant */
+  jamUrl?: string;
 }
 
 export async function getNowPlaying(): Promise<NowPlaying | null> {
   try {
-    const { state, attributes } = await getSpotifyState();
+    const [{ state, attributes }, jamUrl] = await Promise.all([
+      getSpotifyState(),
+      getJamUrl(),
+    ]);
     if (
       (state !== "playing" && state !== "paused") ||
       !attributes.media_title
@@ -47,6 +56,7 @@ export async function getNowPlaying(): Promise<NowPlaying | null> {
       duration,
       position: duration ? Math.min(position, duration) : position,
       device: attributes.source,
+      jamUrl,
     };
   } catch (error) {
     console.error("Error fetching now playing:", error);

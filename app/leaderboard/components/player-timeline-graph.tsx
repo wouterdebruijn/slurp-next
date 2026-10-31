@@ -18,7 +18,13 @@ import {
 interface PlayerTimelineGraphProps {
   sessionId: string;
   topThreePlayers?: { id: string; rank: number }[];
+  /** Shown to the right of the title, e.g. what's playing */
+  headerAside?: React.ReactNode;
 }
+
+// Sits beside the title with room to breathe; wraps under it when it won't fit
+const ASIDE_CLASS =
+  "ml-auto min-w-0 flex-1 basis-[18rem] max-w-[26rem] xl:max-w-[30rem] short:max-w-[26rem]";
 
 const RANK_MARKERS: Record<number, string> = { 1: "🎃", 2: "👻", 3: "💀" };
 
@@ -31,6 +37,7 @@ const SPOOKY_TICK = {
 export default function PlayerTimelineGraph({
   sessionId,
   topThreePlayers = [],
+  headerAside,
 }: PlayerTimelineGraphProps) {
   const { data, isLoading, error, dataUpdatedAt } = useQuery({
     queryKey: ["player-entries", sessionId],
@@ -41,9 +48,12 @@ export default function PlayerTimelineGraph({
   if (isLoading) {
     return (
       <div className="bg-grave/95 border-3 border-hex rounded-2xl p-6 mb-8 lg:mb-0 lg:flex-1 lg:min-h-0">
-        <h2 className="font-spooky text-3xl tracking-wide text-bone mb-4">
-          Descent Into Madness
-        </h2>
+        <div className="flex flex-wrap items-center gap-x-8 gap-y-4 mb-4">
+          <h2 className="font-spooky text-3xl tracking-wide text-bone">
+            Descent Into Madness
+          </h2>
+          {headerAside && <div className={ASIDE_CLASS}>{headerAside}</div>}
+        </div>
         <div className="flex items-center justify-center h-64">
           <div className="text-4xl animate-spin">🔮</div>
         </div>
@@ -54,9 +64,12 @@ export default function PlayerTimelineGraph({
   if (error || !data || data.timelineData.length === 0) {
     return (
       <div className="bg-grave/95 border-3 border-hex rounded-2xl p-6 mb-8 lg:mb-0 lg:flex-1 lg:min-h-0">
-        <h2 className="font-spooky text-3xl tracking-wide text-bone mb-4">
-          Descent Into Madness
-        </h2>
+        <div className="flex flex-wrap items-center gap-x-8 gap-y-4 mb-4">
+          <h2 className="font-spooky text-3xl tracking-wide text-bone">
+            Descent Into Madness
+          </h2>
+          {headerAside && <div className={ASIDE_CLASS}>{headerAside}</div>}
+        </div>
         <div className="flex items-center justify-center h-64 text-mist">
           <p>No souls claimed yet...</p>
         </div>
@@ -138,18 +151,21 @@ export default function PlayerTimelineGraph({
   return (
     <div className="relative bg-grave rounded-3xl p-6 pt-8 xl:p-10 xl:pt-12 short:p-6 short:pt-8 mb-8 lg:mb-0 lg:flex-1 lg:min-h-0 lg:flex lg:flex-col border-3 border-hex glow-hex">
       <SlimeDrips />
-      <div className="flex items-center mb-6 xl:mb-8 short:mb-2">
-        <span className="text-4xl xl:text-7xl short:text-4xl">🕸️</span>
-        <div className="inline-block ml-3 xl:ml-6 short:ml-3">
-          <h2 className="font-spooky text-3xl xl:text-6xl short:text-3xl tracking-wide text-bone">
-            Descent Into Madness
-          </h2>
-          {lastPlayer && (
-            <p className="text-sm xl:text-2xl short:text-base text-slime text-glow-slime font-semibold">
-              {getRandomPraise(lastPlayer.username)}
-            </p>
-          )}
+      <div className="flex flex-wrap items-center gap-x-8 xl:gap-x-12 gap-y-4 mb-6 xl:mb-8 short:mb-2">
+        <div className="flex shrink-0 items-center">
+          <span className="text-4xl xl:text-7xl short:text-4xl">🕸️</span>
+          <div className="inline-block ml-3 xl:ml-6 short:ml-3">
+            <h2 className="font-spooky text-3xl xl:text-6xl short:text-3xl tracking-wide text-bone">
+              Descent Into Madness
+            </h2>
+            {lastPlayer && (
+              <p className="text-sm xl:text-2xl short:text-base text-slime text-glow-slime font-semibold">
+                {getRandomPraise(lastPlayer.username)}
+              </p>
+            )}
+          </div>
         </div>
+        {headerAside && <div className={ASIDE_CLASS}>{headerAside}</div>}
       </div>
       <div className="relative h-80 lg:h-auto lg:flex-1 lg:min-h-0">
         <SpiderWeb className="absolute right-0 top-0 h-3/4 aspect-square -scale-x-100 opacity-15 pointer-events-none" />

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { QRCodeSVG } from "qrcode.react";
 import { getNowPlaying } from "@/app/actions/spotify-actions";
 
 const EQUALIZER = [
@@ -52,7 +53,7 @@ export default function NowPlaying({ className = "" }: { className?: string }) {
         className="size-14 xl:size-20 short:size-11 shrink-0 rounded-lg bg-tomb object-cover"
       />
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-1.5 text-xs xl:text-sm short:text-xs font-semibold text-slime">
+        <div className="flex items-center gap-1.5 whitespace-nowrap text-xs xl:text-sm short:text-xs font-semibold text-slime">
           {track.playing ? (
             <span className="flex h-3 items-end gap-0.5" aria-hidden="true">
               {EQUALIZER.map((bar) => (
@@ -69,7 +70,9 @@ export default function NowPlaying({ className = "" }: { className?: string }) {
           ) : (
             <span aria-hidden="true">⏸</span>
           )}
-          {track.playing ? "Now haunting the speakers" : "Paused"}
+          <span className="truncate">
+            {track.playing ? "Now haunting" : "Paused"}
+          </span>
         </div>
         <p className="truncate font-bold text-bone xl:text-xl short:text-base">
           {track.title}
@@ -85,6 +88,23 @@ export default function NowPlaying({ className = "" }: { className?: string }) {
           />
         </div>
       </div>
+      {track.jamUrl && (
+        <div className="flex shrink-0 flex-col items-center gap-1">
+          {/* Dark on light: phone cameras often fail to read inverted codes */}
+          <QRCodeSVG
+            value={track.jamUrl}
+            title="Scan to join the Spotify Jam"
+            level="L"
+            marginSize={1}
+            bgColor="#f5eddc"
+            fgColor="#0b0612"
+            className="size-14 xl:size-20 short:size-12 rounded-md"
+          />
+          <span className="text-[10px] xl:text-xs short:text-[10px] font-semibold leading-none text-slime">
+            Join the jam
+          </span>
+        </div>
+      )}
     </div>
   );
 }
