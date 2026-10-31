@@ -185,6 +185,47 @@ body {
   }
 }
 
+@keyframes flame-flicker {
+  0%, 100% {
+    transform: scale(1, 1) skewX(0deg);
+    opacity: 0.95;
+  }
+  25% {
+    transform: scale(0.92, 1.12) skewX(-4deg);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.06, 0.9) skewX(3deg);
+    opacity: 0.85;
+  }
+  75% {
+    transform: scale(0.96, 1.06) skewX(-2deg);
+    opacity: 1;
+  }
+}
+
+@keyframes ember-rise {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(var(--dx), -11vh, 0) scale(0.3);
+    opacity: 0;
+  }
+}
+
+@keyframes fire-glow {
+  0%, 100% {
+    opacity: 0.85;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+
 @keyframes sky-flash {
   0%, 100% {
     opacity: 0;
@@ -298,6 +339,18 @@ body {
 
 .animate-zombie-lurch {
   animation: zombie-lurch ease-in-out infinite;
+}
+
+.animate-flame-flicker {
+  animation: flame-flicker 0.8s ease-in-out infinite;
+}
+
+.animate-ember-rise {
+  animation: ember-rise 2s ease-out infinite;
+}
+
+.animate-fire-glow {
+  animation: fire-glow 1.3s ease-in-out infinite;
 }
 
 .animate-sky-flash {

@@ -201,6 +201,38 @@ export function Zombie({ className }: ArtProps) {
   );
 }
 
+/** A rough wooden grave cross, charred at the base. */
+export function WoodenCross({ className }: ArtProps) {
+  return (
+    <svg viewBox="0 0 40 80" className={className} aria-hidden="true">
+      <g stroke="#0b0612" strokeWidth="1.5" strokeLinejoin="round">
+        <path d="M17 2 L23 1 L24 80 L16 80 Z" fill="#4a2e1a" />
+        <path d="M4 17 L36 15 L36 22 L4 23 Z" fill="#5a3820" />
+      </g>
+      <path d="M16 60 L24 58 L24 80 L16 80 Z" fill="#1a0e08" opacity="0.8" />
+    </svg>
+  );
+}
+
+export function Flame({ className }: ArtProps) {
+  return (
+    <svg viewBox="0 0 40 60" className={className} aria-hidden="true">
+      <defs>
+        <radialGradient id="flame-fill" cx="50%" cy="78%" r="70%">
+          <stop offset="0%" stopColor="#fff2b0" />
+          <stop offset="35%" stopColor="#ffb454" />
+          <stop offset="75%" stopColor="#ff5a18" />
+          <stop offset="100%" stopColor="#d3122a" />
+        </radialGradient>
+      </defs>
+      <path
+        d="M20 0 C25 13 37 21 37 38 C37 51 29 60 20 60 C11 60 3 51 3 38 C3 27 11 22 13 12 C16 18 18 20 20 0 Z"
+        fill="url(#flame-fill)"
+      />
+    </svg>
+  );
+}
+
 export function Graveyard({ className }: ArtProps) {
   return (
     <svg viewBox="0 0 1600 300" className={className} aria-hidden="true">
