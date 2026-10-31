@@ -87,11 +87,12 @@ const WEB_RINGS = [40, 75, 112, 150, 190];
 const point = (value: number) => value.toFixed(1);
 
 // A corner web: spokes fan out from (0,0), rings sag back towards the corner
-export function SpiderWeb({ className }: ArtProps) {
+export function SpiderWeb({ className, style }: ArtProps) {
   return (
     <svg
       viewBox="0 0 200 200"
       className={className}
+      style={style}
       fill="none"
       stroke="#b9adc9"
       strokeWidth="0.8"

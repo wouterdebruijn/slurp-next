@@ -14,6 +14,7 @@ import ErrorState from "./components/error-state";
 import PlayerTimelineGraph from "./components/player-timeline-graph";
 import NowPlaying from "./components/now-playing";
 import WheelOfDoom from "./wheel/wheel-of-doom";
+import SpiderHeist from "./heist/spider-heist";
 
 interface LeaderboardClientProps {
   sessionId: string;
@@ -103,13 +104,13 @@ export default function LeaderboardClient({
             </div>
 
             {/* Graph Section */}
-            <div className="lg:flex-1 xl:flex-[2] lg:min-w-0 lg:flex lg:flex-col">
+            <SpiderHeist className="lg:flex-1 xl:flex-[2] lg:min-w-0 lg:flex lg:flex-col">
               <PlayerTimelineGraph
                 sessionId={sessionId}
                 topThreePlayers={topThreePlayers}
                 headerAside={<NowPlaying />}
               />
-            </div>
+            </SpiderHeist>
           </div>
         </div>
 
