@@ -1,5 +1,6 @@
 interface ArtProps {
   className?: string;
+  style?: React.CSSProperties;
 }
 
 export function Pumpkin({ className }: ArtProps) {
@@ -171,9 +172,14 @@ export function Witch({ className }: ArtProps) {
 }
 
 /** Shambling zombie facing right, arms out. */
-export function Zombie({ className }: ArtProps) {
+export function Zombie({ className, style }: ArtProps) {
   return (
-    <svg viewBox="0 0 64 100" className={className} aria-hidden="true">
+    <svg
+      viewBox="0 0 64 100"
+      className={className}
+      style={style}
+      aria-hidden="true"
+    >
       <g
         fill="#2f4f24"
         stroke="#0b0612"
@@ -229,6 +235,42 @@ export function Flame({ className }: ArtProps) {
         d="M20 0 C25 13 37 21 37 38 C37 51 29 60 20 60 C11 60 3 51 3 38 C3 27 11 22 13 12 C16 18 18 20 20 0 Z"
         fill="url(#flame-fill)"
       />
+    </svg>
+  );
+}
+
+/** A cracked headstone on a fresh mound of dirt. */
+export function Tombstone({ className, style }: ArtProps) {
+  return (
+    <svg
+      viewBox="0 0 40 50"
+      className={className}
+      style={style}
+      aria-hidden="true"
+    >
+      <path
+        d="M7 48 V18 C7 8 13 3 20 3 C27 3 33 8 33 18 V48 Z"
+        fill="#4a4458"
+        stroke="#0b0612"
+        strokeWidth="1.5"
+      />
+      <text
+        x="20"
+        y="24"
+        textAnchor="middle"
+        fontSize="8"
+        fontWeight="700"
+        fill="#2c2738"
+      >
+        RIP
+      </text>
+      <path
+        d="M13 31 L17 35 L15 40"
+        stroke="#2c2738"
+        strokeWidth="1"
+        fill="none"
+      />
+      <ellipse cx="20" cy="49" rx="20" ry="5" fill="#2a1a12" />
     </svg>
   );
 }

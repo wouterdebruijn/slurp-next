@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { SHOT_EVENT } from "@/app/components/halloween/motion";
 import { getLeaderboardBySession } from "@/app/actions/leaderboard-actions";
 import LeaderboardHeader from "./components/leaderboard-header";
 import CurrentPlayerStats from "./components/current-player-stats";
@@ -25,6 +27,20 @@ export default function LeaderboardClient({
     queryFn: () => getLeaderboardBySession(sessionId),
     refetchInterval: 5000, // Refetch every 5 seconds
   });
+
+  // Let the decorations celebrate whenever someone takes a shot
+  const totalShots = data?.players.reduce((sum, p) => sum + p.totalShots, 0);
+  const previousTotal = useRef<number | undefined>(undefined);
+  useEffect(() => {
+    if (totalShots === undefined) return;
+    if (
+      previousTotal.current !== undefined &&
+      totalShots > previousTotal.current
+    ) {
+      window.dispatchEvent(new Event(SHOT_EVENT));
+    }
+    previousTotal.current = totalShots;
+  }, [totalShots]);
 
   if (isLoading) {
     return <LoadingState />;

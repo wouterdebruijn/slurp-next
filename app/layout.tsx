@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Creepster, Geist, Geist_Mono, Nosifer } from "next/font/google";
 import FlyingWitch from "./components/halloween/flying-witch";
+import SpiderWalker from "./components/halloween/spider-walker";
 import ZombieHorde from "./components/halloween/zombie-horde";
 import SpookyBackdrop from "./components/halloween/spooky-backdrop";
 import { QueryProvider } from "./providers/query-provider";
@@ -64,6 +65,7 @@ export default function RootLayout({
             <QueryProvider>{children}</QueryProvider>
           </div>
           <ZombieHorde />
+          <SpiderWalker />
           <FlyingWitch />
         </div>
       </body>

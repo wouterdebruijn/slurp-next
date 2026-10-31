@@ -5,7 +5,6 @@ import {
   Ghost,
   Graveyard,
   Moon,
-  Spider,
   SpiderWeb,
 } from "./spooky-art";
 
@@ -112,11 +111,6 @@ export default function SpookyBackdrop() {
           <Ghost className={`animate-ghost-float ${ghost.size}`} />
         </div>
       ))}
-
-      <div className="hidden md:flex animate-spider-dangle absolute left-[29%] -top-[32vh] flex-col items-center">
-        <div className="w-px h-[40vh] bg-mist/50" />
-        <Spider className="w-10 lg:w-14 -mt-1" />
-      </div>
 
       <Graveyard className="absolute bottom-0 right-0 w-full min-w-[800px]" />
 

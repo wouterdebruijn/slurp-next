@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { THUNDER_EVENT, prefersReducedMotion, rand } from "./motion";
 
 interface Bolt {
   left: number;
@@ -14,8 +15,6 @@ interface Strike {
   id: number;
   bolts: Bolt[];
 }
-
-const rand = (min: number, max: number) => min + Math.random() * (max - min);
 
 /** A jagged line falling from (x, y), drifting sideways, in a 100x300 box. */
 function jagged(x: number, y: number, length: number, drift: number) {
@@ -86,7 +85,7 @@ export default function Thunderstorm() {
   const [strike, setStrike] = useState<Strike | null>(null);
 
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (prefersReducedMotion()) {
       return;
     }
 
@@ -95,6 +94,7 @@ export default function Thunderstorm() {
 
     const thunder = () => {
       setStrike(makeStrike(++id));
+      window.dispatchEvent(new Event(THUNDER_EVENT));
 
       // Sound travels slower than light: rumble after the flash. The sky
       // shakes hard, the page itself a little.

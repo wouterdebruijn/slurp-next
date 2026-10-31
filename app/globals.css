@@ -139,12 +139,12 @@ body {
   }
 }
 
-@keyframes spider-dangle {
+@keyframes spider-scuttle {
   0%, 100% {
-    transform: translateY(0);
+    transform: rotate(-7deg) translateY(0);
   }
   50% {
-    transform: translateY(14vh);
+    transform: rotate(7deg) translateY(-2px);
   }
 }
 
@@ -167,12 +167,29 @@ body {
 }
 
 /* One soft double flash per cycle, kept dim so it never strobes */
-@keyframes zombie-walk {
-  from {
-    transform: translate3d(-12vh, 0, 0);
+@keyframes burst {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 1;
   }
-  to {
-    transform: translate3d(42vw, 0, 0);
+  100% {
+    transform: translate3d(var(--dx), var(--dy), 0) scale(0.2);
+    opacity: 0;
+  }
+}
+
+@keyframes dirt-spray {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+    opacity: 1;
+  }
+  60% {
+    transform: translate3d(calc(var(--dx) * 0.7), var(--dy), 0) rotate(180deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(var(--dx), 0, 0) rotate(300deg);
+    opacity: 0;
   }
 }
 
@@ -333,8 +350,8 @@ body {
   animation: ghost-float 6s ease-in-out infinite;
 }
 
-.animate-spider-dangle {
-  animation: spider-dangle 11s ease-in-out infinite;
+.animate-spider-scuttle {
+  animation: spider-scuttle 0.22s linear infinite;
 }
 
 .animate-fog-drift {
@@ -345,8 +362,12 @@ body {
   animation: twinkle 5s ease-in-out infinite;
 }
 
-.animate-zombie-walk {
-  animation: zombie-walk linear infinite;
+.animate-burst {
+  animation: burst 1.1s ease-out both;
+}
+
+.animate-dirt-spray {
+  animation: dirt-spray 0.9s ease-out both;
 }
 
 .animate-zombie-lurch {
