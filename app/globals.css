@@ -230,16 +230,22 @@ body {
   0%, 100% {
     opacity: 0;
   }
-  6% {
-    opacity: 0.3;
+  4% {
+    opacity: 0.55;
   }
-  14% {
-    opacity: 0.05;
+  10% {
+    opacity: 0.1;
   }
-  22% {
-    opacity: 0.22;
+  16% {
+    opacity: 0.45;
   }
-  60% {
+  24% {
+    opacity: 0.15;
+  }
+  32% {
+    opacity: 0.35;
+  }
+  65% {
     opacity: 0;
   }
 }
@@ -248,19 +254,25 @@ body {
   0%, 100% {
     opacity: 0;
   }
-  4% {
+  3% {
     opacity: 1;
   }
-  12% {
-    opacity: 0.15;
+  10% {
+    opacity: 0.2;
   }
-  20% {
+  16% {
     opacity: 1;
   }
-  45% {
+  24% {
+    opacity: 0.5;
+  }
+  32% {
+    opacity: 1;
+  }
+  55% {
     opacity: 0.8;
   }
-  70% {
+  75% {
     opacity: 0;
   }
 }
@@ -354,11 +366,11 @@ body {
 }
 
 .animate-sky-flash {
-  animation: sky-flash 1s linear forwards;
+  animation: sky-flash 1.4s linear forwards;
 }
 
 .animate-bolt-strike {
-  animation: bolt-strike 0.9s linear forwards;
+  animation: bolt-strike 1.2s linear both;
 }
 
 .animate-flicker {

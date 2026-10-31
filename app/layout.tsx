@@ -60,7 +60,7 @@ export default function RootLayout({
       >
         <div className="relative min-h-screen bg-crypt">
           <SpookyBackdrop />
-          <div className="relative z-10">
+          <div id="page-content" className="relative z-10">
             <QueryProvider>{children}</QueryProvider>
           </div>
           <ZombieHorde />
