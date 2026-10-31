@@ -61,9 +61,12 @@ export default function LeaderboardClient({
 
           {/* Landscape Layout: Side-by-side for TV/wide screens */}
           <div className="flex flex-col lg:flex-row lg:gap-6 lg:flex-1 lg:min-h-0">
-            {/* Leaderboard Section: scrolls inside its column, fading out at the bottom */}
-            <div className="lg:flex-1 xl:flex-[1] lg:min-w-0 lg:overflow-y-auto lg:p-6 lg:-m-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:[mask-image:linear-gradient(to_bottom,black_calc(100%-4rem),transparent)]">
-              <div className="space-y-3 mb-8 lg:mb-0 lg:pb-10">
+            {/* Leaderboard Section: on wide screens the top 10 split the column height evenly.
+                The padding leaves room for the card glow before the overflow clips it. */}
+            <div className="lg:flex-1 xl:flex-[1] lg:min-w-0 lg:overflow-hidden lg:p-6 lg:-m-6">
+              <div
+                className={`space-y-3 mb-8 lg:mb-0 ${players.length > 0 ? "lg:h-full lg:grid lg:grid-rows-10 lg:gap-[1.2vh] lg:space-y-0 lg:[&>*:nth-child(n+11)]:hidden" : ""}`}
+              >
                 {players.length === 0 ? (
                   <EmptyLeaderboard />
                 ) : (
