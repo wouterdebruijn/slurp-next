@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { getPlayerEntries } from "@/app/actions/player-entries-actions";
 import { hashStringToColor } from "@/utils/colorUtils";
-import { SlimeDrips } from "@/app/components/halloween/spooky-art";
+import { SlimeDrips, SpiderWeb } from "@/app/components/halloween/spooky-art";
 import {
   LineChart,
   Line,
@@ -20,8 +20,17 @@ interface PlayerTimelineGraphProps {
   topThreePlayers?: { id: string; rank: number }[];
 }
 
+const RANK_MARKERS: Record<number, string> = { 1: "🎃", 2: "👻", 3: "💀" };
+
+const SPOOKY_TICK = {
+  fill: "#f5eddc",
+  fontFamily: "var(--font-creepster)",
+  letterSpacing: "0.05em",
+};
+
 export default function PlayerTimelineGraph({
   sessionId,
+  topThreePlayers = [],
 }: PlayerTimelineGraphProps) {
   const { data, isLoading, error, dataUpdatedAt } = useQuery({
     queryKey: ["player-entries", sessionId],
@@ -103,6 +112,21 @@ export default function PlayerTimelineGraph({
     time: Math.max(dataUpdatedAt, lastPoint.time),
   });
 
+  const lastIndex = formattedData.length - 1;
+  const rankByPlayer = Object.fromEntries(
+    topThreePlayers.map(({ id, rank }) => [id, rank]),
+  );
+  // Tied players end on the same point: step the lower ranks' markers left
+  const lastValues = formattedData[lastIndex] as Record<string, unknown>;
+  const markerShift = Object.fromEntries(
+    topThreePlayers.map(({ id, rank }) => [
+      id,
+      topThreePlayers.filter(
+        (other) => other.rank < rank && lastValues[other.id] === lastValues[id],
+      ).length * -30,
+    ]),
+  );
+
   // Evenly spaced time labels rather than one per entry, which bunch up
   const startTime = formattedData[0].time;
   const endTime = formattedData[formattedData.length - 1].time;
@@ -127,16 +151,18 @@ export default function PlayerTimelineGraph({
           )}
         </div>
       </div>
-      <div className="h-80 lg:h-auto lg:flex-1 lg:min-h-0">
+      <div className="relative h-80 lg:h-auto lg:flex-1 lg:min-h-0">
+        <SpiderWeb className="absolute right-0 top-0 h-3/4 aspect-square -scale-x-100 opacity-15 pointer-events-none" />
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
             data={formattedData}
-            margin={{ left: -20, right: 10, top: 5, bottom: 20 }}
+            margin={{ left: 0, right: 24, top: 18, bottom: 20 }}
           >
             <CartesianGrid
-              strokeDasharray="5 5"
-              stroke="#5b3f7d"
-              opacity={0.6}
+              vertical={false}
+              strokeDasharray="2 8"
+              stroke="#8b3dff"
+              opacity={0.45}
             />
             <XAxis
               dataKey="time"
@@ -145,11 +171,12 @@ export default function PlayerTimelineGraph({
               domain={["dataMin", "dataMax"]}
               ticks={timeTicks}
               tickFormatter={formatTime}
-              stroke="#FFB454"
+              stroke="#ff7a18"
               strokeWidth={2}
-              style={{ fontSize: "11px", fontWeight: "600" }}
-              tick={{ fill: "#FFB454" }}
-              angle={-45}
+              tickLine={false}
+              style={{ fontSize: "15px" }}
+              tick={SPOOKY_TICK}
+              angle={-30}
               textAnchor="end"
               height={60}
             />
@@ -157,10 +184,11 @@ export default function PlayerTimelineGraph({
               // Headroom above the leader so their line doesn't hug the top edge
               domain={[0, (dataMax: number) => Math.ceil(dataMax * 1.15) || 1]}
               allowDecimals={false}
-              stroke="#FFB454"
+              stroke="#ff7a18"
               strokeWidth={2}
-              style={{ fontSize: "13px", fontWeight: "600" }}
-              tick={{ fill: "#FFB454" }}
+              tickLine={false}
+              style={{ fontSize: "18px" }}
+              tick={SPOOKY_TICK}
             />
             <Tooltip
               contentStyle={{
@@ -171,13 +199,37 @@ export default function PlayerTimelineGraph({
                 fontWeight: "600",
                 boxShadow: "0 4px 18px rgba(0, 0, 0, 0.6)",
               }}
-              labelStyle={{ color: "#FFB454", fontWeight: "700" }}
+              labelStyle={{
+                color: "#ff7a18",
+                fontFamily: "var(--font-creepster)",
+                fontSize: "18px",
+                letterSpacing: "0.05em",
+              }}
               labelFormatter={(time) => formatTime(Number(time))}
             />
             <Legend
-              wrapperStyle={{ fontSize: "10px", fontWeight: "600" }}
+              iconType="circle"
+              iconSize={8}
+              wrapperStyle={{ fontSize: "12px", fontWeight: "600" }}
               formatter={(value) => playerNames[value] || value}
             />
+            {/* Wide faint copies under every line: a glow without an SVG filter */}
+            {playerIds.map((playerId) => (
+              <Line
+                key={`${playerId}-glow`}
+                type="stepAfter"
+                dataKey={playerId}
+                stroke={playerColors[playerId]}
+                strokeWidth={10}
+                strokeOpacity={0.18}
+                dot={false}
+                activeDot={false}
+                legendType="none"
+                tooltipType="none"
+                connectNulls
+                isAnimationActive={false}
+              />
+            ))}
             {playerIds.map((playerId) => (
               <Line
                 key={playerId}
@@ -186,8 +238,24 @@ export default function PlayerTimelineGraph({
                 dataKey={playerId}
                 stroke={playerColors[playerId]}
                 strokeWidth={3}
-                dot={false}
-                activeDot={{ r: 6 }}
+                // The top three carry their rank emoji at the head of their line
+                dot={(props) =>
+                  props.index === lastIndex && rankByPlayer[playerId] ? (
+                    <text
+                      key={`${playerId}-marker`}
+                      x={(props.cx ?? 0) + markerShift[playerId]}
+                      y={props.cy}
+                      textAnchor="middle"
+                      dominantBaseline="central"
+                      fontSize={26}
+                    >
+                      {RANK_MARKERS[rankByPlayer[playerId]]}
+                    </text>
+                  ) : (
+                    <g key={`${playerId}-${props.index}`} />
+                  )
+                }
+                activeDot={{ r: 6, strokeWidth: 0 }}
                 name={playerNames[playerId]}
                 connectNulls
                 // The data changes on every refetch; re-animating all lines each

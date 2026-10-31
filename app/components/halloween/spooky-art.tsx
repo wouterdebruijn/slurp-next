@@ -97,7 +97,10 @@ export function SpiderWeb({ className }: ArtProps) {
       aria-hidden="true"
     >
       {WEB_RADIALS.map(({ x, y }) => (
-        <path key={`${x}-${y}`} d={`M0 0 L${point(x * 200)} ${point(y * 200)}`} />
+        <path
+          key={`${x}-${y}`}
+          d={`M0 0 L${point(x * 200)} ${point(y * 200)}`}
+        />
       ))}
       {WEB_RINGS.flatMap((radius) =>
         WEB_RADIALS.slice(1).map((end, index) => {
@@ -143,7 +146,10 @@ export function Witch({ className }: ArtProps) {
   return (
     <svg viewBox="0 0 200 200" className={className} aria-hidden="true">
       {/* Witch on a broomstick */}
-      <g transform="translate(36 72) scale(1.08) rotate(-7 60 40)" fill="#05020a">
+      <g
+        transform="translate(36 72) scale(1.08) rotate(-7 60 40)"
+        fill="#05020a"
+      >
         <path
           d="M2 50 L112 38"
           stroke="#05020a"
@@ -160,6 +166,37 @@ export function Witch({ className }: ArtProps) {
         <path d="M46 13 L72 9 L72 12 L46 16 Z" />
         <path d="M51 12 L66 10 L55 -8 Z" />
       </g>
+    </svg>
+  );
+}
+
+/** Shambling zombie facing right, arms out. */
+export function Zombie({ className }: ArtProps) {
+  return (
+    <svg viewBox="0 0 64 100" className={className} aria-hidden="true">
+      <g
+        fill="#2f4f24"
+        stroke="#0b0612"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      >
+        {/* Back arm */}
+        <path d="M30 31 L52 27 L55 30 L33 36 Z" />
+        {/* Legs: one dragging behind */}
+        <path d="M24 60 L17 95 L25 96 L30 62 Z" />
+        <path d="M33 60 L40 79 L37 96 L45 96 L47 78 L40 58 Z" />
+        {/* Torn shirt */}
+        <path
+          d="M22 28 C26 25 34 25 39 28 L41 61 L37 58 L34 63 L30 58 L26 63 L22 59 Z"
+          fill="#5b3f7d"
+        />
+        {/* Head, lolling forward */}
+        <ellipse cx="33" cy="17" rx="9" ry="10" transform="rotate(12 33 17)" />
+        {/* Front arm */}
+        <path d="M33 33 L58 35 L60 39 L57 41 L34 39 Z" />
+      </g>
+      <circle cx="36" cy="15" r="1.8" fill="#9dff3c" />
+      <circle cx="40.5" cy="16.5" r="1.5" fill="#9dff3c" />
     </svg>
   );
 }
@@ -190,10 +227,7 @@ export function Graveyard({ className }: ArtProps) {
         <path d="M1195 74 Q1205 60 1215 74 V92 H1195 Z" />
         <rect x="1284" y="94" width="14" height="20" />
       </g>
-      <path
-        d="M1192 170 V134 Q1205 118 1218 134 V170 Z"
-        fill="#05020a"
-      />
+      <path d="M1192 170 V134 Q1205 118 1218 134 V170 Z" fill="#05020a" />
 
       {/* Near hill */}
       <path

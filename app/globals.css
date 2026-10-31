@@ -167,15 +167,60 @@ body {
 }
 
 /* One soft double flash per cycle, kept dim so it never strobes */
-@keyframes lightning {
-  0%, 91%, 93%, 95%, 100% {
+@keyframes zombie-walk {
+  from {
+    transform: translate3d(-12vh, 0, 0);
+  }
+  to {
+    transform: translate3d(42vw, 0, 0);
+  }
+}
+
+@keyframes zombie-lurch {
+  0%, 100% {
+    transform: translateY(0) rotate(-3deg);
+  }
+  50% {
+    transform: translateY(-4%) rotate(5deg);
+  }
+}
+
+@keyframes sky-flash {
+  0%, 100% {
     opacity: 0;
   }
-  92% {
+  6% {
+    opacity: 0.3;
+  }
+  14% {
+    opacity: 0.05;
+  }
+  22% {
     opacity: 0.22;
   }
-  94% {
-    opacity: 0.12;
+  60% {
+    opacity: 0;
+  }
+}
+
+@keyframes bolt-strike {
+  0%, 100% {
+    opacity: 0;
+  }
+  4% {
+    opacity: 1;
+  }
+  12% {
+    opacity: 0.15;
+  }
+  20% {
+    opacity: 1;
+  }
+  45% {
+    opacity: 0.8;
+  }
+  70% {
+    opacity: 0;
   }
 }
 
@@ -247,8 +292,20 @@ body {
   animation: twinkle 5s ease-in-out infinite;
 }
 
-.animate-lightning {
-  animation: lightning 27s linear infinite;
+.animate-zombie-walk {
+  animation: zombie-walk linear infinite;
+}
+
+.animate-zombie-lurch {
+  animation: zombie-lurch ease-in-out infinite;
+}
+
+.animate-sky-flash {
+  animation: sky-flash 1s linear forwards;
+}
+
+.animate-bolt-strike {
+  animation: bolt-strike 0.9s linear forwards;
 }
 
 .animate-flicker {
