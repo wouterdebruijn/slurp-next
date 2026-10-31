@@ -20,19 +20,19 @@ const rand = (min: number, max: number) => min + Math.random() * (max - min);
 const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value));
 
-interface Particle {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  life: number;
-  maxLife: number;
-  size: number;
-  color: string;
-}
-
-const PARTICLE_COLORS = ["#ffb454", "#ff7a18", "#9dff3c", "#c9a2ff", "#f5eddc"];
-const MAX_PARTICLES = 160;
+// Each sparkle loops a short drift-and-fade from the broom tail. They ride
+// along with the witch, so the whole flight stays transform/opacity only and
+// runs on the compositor; a canvas trail was far too heavy for a TV.
+const SPARKLES = [
+  { color: "#ffb454", dy: -18, delay: 0 },
+  { color: "#9dff3c", dy: 14, delay: 0.12 },
+  { color: "#c9a2ff", dy: -6, delay: 0.24 },
+  { color: "#ff7a18", dy: 22, delay: 0.36 },
+  { color: "#f5eddc", dy: -24, delay: 0.48 },
+  { color: "#9dff3c", dy: 6, delay: 0.6 },
+  { color: "#ffb454", dy: -12, delay: 0.72 },
+  { color: "#c9a2ff", dy: 18, delay: 0.84 },
+];
 
 /**
  * Sits on the moon, then every so often takes a randomized flight across the
@@ -42,7 +42,7 @@ const MAX_PARTICLES = 160;
  */
 export default function FlyingWitch() {
   const ref = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [flying, setFlying] = useState(false);
   const [home, setHome] = useState<{
     left: number;
     top: number;
@@ -59,26 +59,17 @@ export default function FlyingWitch() {
     };
     update();
 
-    const observer = new ResizeObserver(update);
-    observer.observe(moon);
     window.addEventListener("resize", update);
-    return () => {
-      observer.disconnect();
-      window.removeEventListener("resize", update);
-    };
+    return () => window.removeEventListener("resize", update);
   }, []);
 
   const ready = home !== null;
 
   useEffect(() => {
     const el = ref.current;
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext("2d");
     if (
       !ready ||
       !el ||
-      !canvas ||
-      !ctx ||
       window.matchMedia("(prefers-reduced-motion: reduce)").matches
     ) {
       return;
@@ -86,77 +77,6 @@ export default function FlyingWitch() {
 
     let timer: ReturnType<typeof setTimeout>;
     let animation: Animation | undefined;
-    let raf = 0;
-    let flying = false;
-    let particles: Particle[] = [];
-
-    const resizeCanvas = () => {
-      const dpr = window.devicePixelRatio || 1;
-      canvas.width = window.innerWidth * dpr;
-      canvas.height = window.innerHeight * dpr;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    };
-    resizeCanvas();
-    window.addEventListener("resize", resizeCanvas);
-
-    // Sparkles spawn at the broom tail while she flies, then drift and fade
-    let lastTime = 0;
-    let prev: { x: number; y: number } | null = null;
-    let dir = 1;
-    const loop = (time: number) => {
-      const dt = Math.min(0.05, (time - lastTime) / 1000 || 0.016);
-      lastTime = time;
-      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
-
-      if (flying) {
-        const rect = el.getBoundingClientRect();
-        const x = rect.left + rect.width / 2;
-        const y = rect.top + rect.height / 2;
-        if (prev) {
-          const moved = Math.hypot(x - prev.x, y - prev.y);
-          if (Math.abs(x - prev.x) > 0.3) dir = x > prev.x ? 1 : -1;
-          if (moved > 0.5) {
-            for (let i = 0; i < 2 && particles.length < MAX_PARTICLES; i++) {
-              const maxLife = rand(0.7, 1.6);
-              particles.push({
-                x: x - dir * rect.width * 0.3 + rand(-6, 6),
-                y: y + rect.height * 0.06 + rand(-6, 6),
-                vx: -dir * rand(5, 40),
-                vy: rand(-25, 20),
-                life: maxLife,
-                maxLife,
-                size: rand(1.5, 4.5),
-                color:
-                  PARTICLE_COLORS[
-                    Math.floor(Math.random() * PARTICLE_COLORS.length)
-                  ],
-              });
-            }
-          }
-        }
-        prev = { x, y };
-      }
-
-      ctx.globalCompositeOperation = "lighter";
-      particles = particles.filter((p) => (p.life -= dt) > 0);
-      for (const p of particles) {
-        p.x += p.vx * dt;
-        p.y += p.vy * dt;
-        p.vy += 30 * dt;
-        const t = p.life / p.maxLife;
-        ctx.globalAlpha = t;
-        ctx.fillStyle = p.color;
-        ctx.shadowColor = p.color;
-        ctx.shadowBlur = 8;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size * (0.4 + 0.6 * t), 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.globalAlpha = 1;
-      ctx.shadowBlur = 0;
-
-      raf = flying || particles.length > 0 ? requestAnimationFrame(loop) : 0;
-    };
 
     const fly = () => {
       const rect = el.getBoundingClientRect();
@@ -262,17 +182,10 @@ export default function FlyingWitch() {
         };
       });
 
-      flying = true;
-      // A black silhouette vanishes against dark cards, so glow while in flight
-      el.style.filter = "drop-shadow(0 0 6px rgb(255 180 84 / 0.7))";
-      prev = null;
-      dir = 1;
-      if (!raf) raf = requestAnimationFrame(loop);
-
+      setFlying(true);
       animation = el.animate(keyframes, { duration: total });
       animation.onfinish = () => {
-        flying = false;
-        el.style.filter = "";
+        setFlying(false);
         timer = setTimeout(fly, rand(12000, 40000));
       };
     };
@@ -282,32 +195,55 @@ export default function FlyingWitch() {
     return () => {
       clearTimeout(timer);
       animation?.cancel();
-      cancelAnimationFrame(raf);
-      window.removeEventListener("resize", resizeCanvas);
     };
   }, [ready]);
+
+  if (!home) return null;
 
   return (
     <div
       className="fixed inset-0 z-50 pointer-events-none overflow-hidden"
       aria-hidden="true"
     >
-      <canvas ref={canvasRef} className="absolute inset-0 size-full" />
-      {home && (
+      <div
+        ref={ref}
+        className="absolute"
+        style={{
+          left: home.left,
+          top: home.top,
+          width: home.size,
+          height: home.size,
+          willChange: "transform",
+        }}
+      >
+        {/* Pre-drawn glow instead of a filter, which would repaint every frame */}
         <div
-          ref={ref}
-          className="absolute"
+          className={`absolute left-[10%] top-[30%] w-[80%] h-[45%] rounded-full transition-opacity duration-500 ${flying ? "opacity-100" : "opacity-0"}`}
           style={{
-            left: home.left,
-            top: home.top,
-            width: home.size,
-            height: home.size,
-            willChange: "transform",
+            background:
+              "radial-gradient(closest-side, rgb(255 180 84 / 0.45), transparent)",
           }}
-        >
-          <Witch className="size-full overflow-visible" />
-        </div>
-      )}
+        />
+        {flying && (
+          <div className="absolute left-[14%] top-[62%]">
+            {SPARKLES.map((sparkle, i) => (
+              <span
+                key={i}
+                className="witch-sparkle"
+                style={
+                  {
+                    "--dy": `${sparkle.dy}px`,
+                    background: sparkle.color,
+                    boxShadow: `0 0 6px 2px ${sparkle.color}`,
+                    animationDelay: `${sparkle.delay}s`,
+                  } as React.CSSProperties
+                }
+              />
+            ))}
+          </div>
+        )}
+        <Witch className="relative size-full overflow-visible" />
+      </div>
     </div>
   );
 }

@@ -190,7 +190,9 @@ export default function PlayerTimelineGraph({
                 activeDot={{ r: 6 }}
                 name={playerNames[playerId]}
                 connectNulls
-                animationDuration={600}
+                // The data changes on every refetch; re-animating all lines each
+                // time is the heaviest thing on the page for a TV
+                isAnimationActive={false}
               />
             ))}
           </LineChart>
