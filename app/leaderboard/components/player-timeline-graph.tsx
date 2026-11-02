@@ -39,7 +39,7 @@ export default function PlayerTimelineGraph({
   topThreePlayers = [],
   headerAside,
 }: PlayerTimelineGraphProps) {
-  const { data, isLoading, error, dataUpdatedAt } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ["player-entries", sessionId],
     queryFn: () => getPlayerEntries(sessionId),
     refetchInterval: 5000,
@@ -117,12 +117,19 @@ export default function PlayerTimelineGraph({
     time: Date.parse(entry.timestamp.replace(" ", "T")),
   }));
 
-  // Carry every line on to the last fetch, otherwise the latest shot is only a
-  // vertical tick at the right edge of a step chart
+  // The party ends at its last entry, not at the current time, so the graph
+  // still reads well the next day. Carry every line on a little past it,
+  // otherwise the latest shot is only a vertical tick at the right edge of a
+  // step chart
+  const firstPoint = formattedData[0];
   const lastPoint = formattedData[formattedData.length - 1];
+  const tailPadding = Math.max(
+    5 * 60 * 1000,
+    (lastPoint.time - firstPoint.time) * 0.03,
+  );
   formattedData.push({
     ...lastPoint,
-    time: Math.max(dataUpdatedAt, lastPoint.time),
+    time: lastPoint.time + tailPadding,
   });
 
   const lastIndex = formattedData.length - 1;
